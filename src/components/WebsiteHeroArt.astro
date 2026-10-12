@@ -1,0 +1,97 @@
+---
+import type { Website } from '../lib/types';
+import { websiteCategoryMeta } from '../data/websites';
+import { getCategory } from '../data/categories';
+import { toneIcon } from '../lib/tones';
+import Icon from './Icon.astro';
+import WebsiteLogo from './WebsiteLogo.astro';
+
+interface Props {
+  website: Website;
+}
+
+const { website } = Astro.props;
+const meta = websiteCategoryMeta[website.category] ?? { icon: 'globe', tone: 'slate' };
+const catName = getCategory(website.category)?.name ?? website.category;
+const toneCls = toneIcon[meta.tone];
+
+// Per-category theme: a central glyph + two floating tile icons so the
+// illustration reads as related to what the site actually does.
+const THEME: Record<string, { glyph: string; tile1: string; tile2: string }> = {
+  ai: { glyph: 'sparkles', tile1: 'bot', tile2: 'message-circle' },
+  developer: { glyph: 'code-2', tile1: 'terminal', tile2: 'git-branch' },
+  search: { glyph: 'search', tile1: 'globe', tile2: 'compass' },
+  productivity: { glyph: 'list-checks', tile1: 'calendar', tile2: 'check-circle' },
+  design: { glyph: 'palette', tile1: 'pen-tool', tile2: 'image' },
+  cloud: { glyph: 'cloud', tile1: 'server', tile2: 'database' },
+  learning: { glyph: 'graduation-cap', tile1: 'book-open', tile2: 'brain' },
+  business: { glyph: 'briefcase', tile1: 'bar-chart', tile2: 'pie-chart' },
+  finance: { glyph: 'wallet', tile1: 'line-chart', tile2: 'coins' },
+  social: { glyph: 'users', tile1: 'message-circle', tile2: 'share-2' },
+  media: { glyph: 'play', tile1: 'music', tile2: 'film' },
+  shopping: { glyph: 'shopping-cart', tile1: 'tag', tile2: 'package' },
+  travel: { glyph: 'plane', tile1: 'map', tile2: 'compass' },
+  health: { glyph: 'heart-pulse', tile1: 'activity', tile2: 'stethoscope' },
+  entertainment: { glyph: 'clapperboard', tile1: 'play', tile2: 'star' },
+  games: { glyph: 'gamepad-2', tile1: 'trophy', tile2: 'swords' },
+};
+const theme = THEME[website.category] ?? { glyph: 'globe', tile1: 'star', tile2: 'sparkles' };
+---
+
+<div class="relative hidden h-full w-full lg:block" aria-hidden="true">
+  <!-- soft glows -->
+  <div class="absolute -left-6 -top-8 h-36 w-36 rounded-full bg-brand-500/15 blur-3xl"></div>
+  <div class="absolute -bottom-4 -right-4 h-32 w-32 rounded-full bg-purple-500/10 blur-3xl"></div>
+
+  <!-- browser window: fills the column height, content vertically centered -->
+  <div class="relative flex h-full flex-col justify-center rounded-2xl border border-line bg-[#0e1523] p-5 shadow-[0_0_60px_-15px_rgba(59,130,246,0.45)]">
+    <!-- window top: control dots -->
+    <div class="flex items-center gap-1.5 pb-4">
+      <span class="h-1.5 w-1.5 rounded-full bg-purple-400/70"></span>
+      <span class="h-1.5 w-1.5 rounded-full bg-purple-400/40"></span>
+      <span class="h-1.5 w-1.5 rounded-full bg-brand-400/40"></span>
+    </div>
+
+    <!-- header: site logo + category chip -->
+    <div class="flex items-center justify-between gap-3">
+      <WebsiteLogo website={website} size="sm" />
+      <span class={`inline-flex items-center gap-1 rounded-full ${toneCls} px-2 py-0.5 text-[10px] font-medium`}>
+        <Icon name={meta.icon} class="h-3 w-3" />
+        {catName}
+      </span>
+    </div>
+
+    <!-- themed feature area -->
+    <div class="mt-4 flex items-center gap-4">
+      <div class={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${toneCls} ring-1 ring-white/10`}>
+        <Icon name={theme.glyph} class="h-6 w-6" />
+      </div>
+      <div class="min-w-0 flex-1 space-y-2">
+        <div class="h-2 w-full rounded bg-line"></div>
+        <div class="h-2 w-4/5 rounded bg-line"></div>
+        <div class="h-2 w-3/5 rounded bg-line"></div>
+      </div>
+    </div>
+
+    <!-- body lines -->
+    <div class="mt-4 space-y-2.5">
+      <div class="h-1.5 w-full rounded bg-line"></div>
+      <div class="h-1.5 w-5/6 rounded bg-line"></div>
+    </div>
+  </div>
+
+  <!-- floating tile 1: overlaps top-right corner -->
+  <div class={`absolute -right-3 -top-3 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-[#141d2e] ${toneCls} shadow-card`}>
+    <Icon name={theme.tile1} class="h-5 w-5" />
+  </div>
+
+  <!-- floating tile 2: right edge, lower area -->
+  <div class={`absolute -right-3 bottom-10 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-[#141d2e] ${toneCls} shadow-card`}>
+    <Icon name={theme.tile2} class="h-5 w-5" />
+  </div>
+
+  <!-- scattered dots -->
+  <span class="absolute -left-3 top-8 h-1.5 w-1.5 rounded-full bg-brand-400/50"></span>
+  <span class="absolute -bottom-3 right-20 h-1.5 w-1.5 rounded-full bg-purple-400/50"></span>
+  <span class="absolute -left-6 bottom-16 h-1 w-1 rounded-full bg-brand-400/40"></span>
+</div>

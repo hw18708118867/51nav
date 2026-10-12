@@ -1,0 +1,15 @@
+---
+import type { Website } from '../lib/types';
+import WebsiteCard from './WebsiteCard.astro';
+
+interface Props {
+  websites: Website[];
+  pageSize?: number;
+}
+
+const { websites, pageSize = 12 } = Astro.props;
+---
+
+<div id="websites-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-page-size={pageSize}>
+  {websites.map((w) => <WebsiteCard website={w} />)}
+</div>

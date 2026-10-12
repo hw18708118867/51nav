@@ -1,0 +1,249 @@
+---
+import { webEngines, quickLinks } from '../data/searchEngines';
+import { icon } from '../lib/icons';
+import WeatherWidget from './WeatherWidget.astro';
+import Icon from './Icon.astro';
+import HeroBackground from './HeroBackground.astro';
+
+const siteIcon = icon('search');
+---
+
+<section class="relative isolate flex min-h-[320px] items-center bg-canvas">
+  <!-- Reused scenic background: gradient sky + country landmark (right) -->
+  <HeroBackground />
+
+  <div class="container-page relative z-10 w-full py-6">
+    <div class="grid items-start gap-6 md:grid-cols-[1.5fr_1fr]">
+      <!-- Left (~60%): primary info + search -->
+      <div class="pt-6">
+        <!-- Greeting -->
+        <p data-greeting class="text-[13px] font-medium text-muted">Good evening 👋</p>
+
+        <!-- Time + Weather side-by-side inside a semi-transparent rounded panel -->
+        <div class="mt-2 inline-flex items-start gap-4 rounded-2xl border border-white/10 bg-surface/50 p-3">
+          <div>
+            <p data-clock class="text-[30px] font-semibold leading-none text-ink tabular-nums">--:--</p>
+            <p data-date class="mt-1 text-xs text-faint">---</p>
+          </div>
+          <div class="hero-weather">
+            <WeatherWidget />
+          </div>
+        </div>
+
+        <!-- Brand -->
+        <h1 class="mt-5 text-[54px] font-extrabold leading-none tracking-tight text-ink">
+          51<span class="text-brand-400">NAV</span>
+        </h1>
+        <p class="mt-2 text-base text-muted">Your Internet Start Page</p>
+        <p class="mt-1 text-xs text-faint">Useful Tools · Websites · Resources · Guides</p>
+
+        <!-- Search (fills the left content column) -->
+        <form id="hero-search" class="relative mt-5 w-full">
+          <div class="search-field">
+            <button
+              type="button"
+              data-engine-btn
+              class="flex shrink-0 items-center gap-2 rounded-[12px] px-2 py-1.5 text-sm font-medium text-ink transition hover:bg-white/5"
+              aria-label="Choose search engine"
+            >
+              <span data-engine-icon class="flex h-7 w-7 items-center justify-center" set:html={siteIcon} />
+              <span data-engine-name class="hidden text-muted sm:inline">Site Search</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="hidden text-faint sm:block">
+                <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+
+            <span class="mx-1 h-5 w-px bg-white/10"></span>
+
+            <input
+              id="hero-q"
+              type="text"
+              name="q"
+              placeholder="Search the web, tools, websites, or guides…"
+              class="w-full bg-transparent py-2 text-[15px] text-ink outline-none placeholder:text-faint"
+              autocomplete="off"
+              aria-label="Search"
+            />
+
+            <div class="hidden shrink-0 items-center gap-1.5 pr-1 sm:flex">
+              <kbd class="flex items-center gap-0.5 rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">
+                <Icon name="command" class="h-3 w-3" />K
+              </kbd>
+            </div>
+
+            <button
+              type="submit"
+              aria-label="Search"
+              class="ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-brand-600 text-white transition hover:bg-brand-500"
+            >
+              <Icon name="arrow-right" class="h-5 w-5" />
+            </button>
+
+            <!-- Engine dropdown -->
+            <div
+              data-engine-menu
+              class="absolute left-2 top-[calc(100%+8px)] z-30 hidden w-44 overflow-hidden rounded-card border border-line bg-[#0d1426] p-1 shadow-card"
+            >
+              {
+                webEngines.map((e) => (
+                  <button
+                    type="button"
+                    data-engine-option={e.id}
+                    class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-ink transition hover:bg-white/5"
+                  >
+                    <span class="flex h-6 w-6 items-center justify-center">
+                      <Icon name={e.icon} class="h-4 w-4" />
+                    </span>
+                    {e.name}
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+        </form>
+
+        <!-- Engine shortcuts (compact rounded pills) -->
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-[13px]">
+          {
+            quickLinks.map((q) => (
+              <a
+                href={q.search}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-1.5 rounded-full border border-line bg-surface/50 px-3 py-1.5 text-muted transition hover:bg-surface-2 hover:text-ink"
+              >
+                <span class="flex h-4 w-4 items-center justify-center">
+                  <Icon name={q.icon} class="h-4 w-4" />
+                </span>
+                {q.name}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+
+      <!-- Right (~40%): decorative slogan only, placed lower-right -->
+      <div class="relative hidden md:block">
+        <div
+          class="pointer-events-none absolute bottom-8 right-0 text-right -rotate-6"
+          style="font-family: 'Brush Script MT', 'Segoe Script', 'Snell Roundhand', cursive; opacity:0.10;"
+          aria-hidden="true"
+        >
+          <p class="text-3xl leading-tight text-white">Better Tools</p>
+          <p class="text-3xl leading-tight text-white">Bigger Possibilities</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { icon } from '../lib/icons';
+  import { webEngines } from '../data/searchEngines';
+  import { getLocation } from '../lib/geo';
+
+  let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const greetingEl = document.querySelector<HTMLElement>('[data-greeting]');
+  const clockEl = document.querySelector<HTMLElement>('[data-clock]');
+  const dateEl = document.querySelector<HTMLElement>('[data-date]');
+
+  function tick() {
+    const now = new Date();
+    const h = Number(
+      new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        hour: 'numeric',
+        hour12: false,
+      }).format(now)
+    );
+    if (greetingEl) {
+      const g = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+      greetingEl.textContent = `${g} 👋`;
+    }
+    if (clockEl) {
+      clockEl.textContent = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(now);
+    }
+    if (dateEl) {
+      dateEl.textContent = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      }).format(now);
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // Update timezone once location is known (used for clock + weather widget)
+  async function initLocation() {
+    try {
+      const loc = await getLocation();
+      if (loc.timezone) timezone = loc.timezone;
+      tick();
+    } catch (err) {
+      console.error('Location init failed', err);
+    }
+  }
+  initLocation();
+
+  // ----- Engine switcher + web search -----
+  const ENGINE_KEY = '51nav:engine';
+  const DEFAULT_ENGINE = 'site';
+  const engines = webEngines;
+  const form = document.getElementById('hero-search') as HTMLFormElement | null;
+  const engineBtn = document.querySelector('[data-engine-btn]');
+  const engineMenu = document.querySelector('[data-engine-menu]') as HTMLElement | null;
+  const engineIcon = document.querySelector('[data-engine-icon]');
+  const engineName = document.querySelector('[data-engine-name]');
+
+  function applyEngine(id: string) {
+    const e = engines.find((x) => x.id === id) ?? engines.find((x) => x.id === DEFAULT_ENGINE)!;
+    if (!e) return;
+    if (engineIcon) engineIcon.innerHTML = icon(e.icon);
+    if (engineName) engineName.textContent = e.name;
+    (engineBtn as HTMLElement)?.setAttribute('data-engine', e.id);
+  }
+
+  const saved = localStorage.getItem(ENGINE_KEY) || DEFAULT_ENGINE;
+  applyEngine(saved);
+
+  engineBtn?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    engineMenu?.classList.toggle('hidden');
+  });
+  document.addEventListener('click', () => engineMenu?.classList.add('hidden'));
+
+  document.querySelectorAll('[data-engine-option]').forEach((opt) => {
+    opt.addEventListener('click', () => {
+      const id = (opt as HTMLElement).dataset.engineOption!;
+      localStorage.setItem(ENGINE_KEY, id);
+      applyEngine(id);
+      engineMenu?.classList.add('hidden');
+    });
+  });
+
+  window.addEventListener('51nav:engine', () => applyEngine(localStorage.getItem(ENGINE_KEY) || DEFAULT_ENGINE));
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = (document.getElementById('hero-q') as HTMLInputElement).value.trim();
+    const id = (engineBtn as HTMLElement)?.getAttribute('data-engine') || DEFAULT_ENGINE;
+
+    // Default "site" engine opens the CommandPalette with the current query.
+    if (id === 'site') {
+      window.dispatchEvent(new CustomEvent('51nav:open-search', { detail: { query: q } }));
+      return;
+    }
+
+    const e2 = engines.find((x) => x.id === id);
+    if (!q || !e2?.search) return;
+    window.open(e2.search.replace('{q}', encodeURIComponent(q)), '_blank');
+  });
+</script>

@@ -1,0 +1,474 @@
+---
+import BaseLayout from '../../components/BaseLayout.astro';
+import GuideTOC from '../../components/GuideTOC.astro';
+import GuidesHeroArt from '../../components/GuidesHeroArt.astro';
+import Icon from '../../components/Icon.astro';
+import { getCollection, render } from 'astro:content';
+import {
+  readingTime,
+  guideIconTheme,
+  difficultyTone,
+  categoryTone,
+} from '../../lib/guides';
+import { toneSolid, toneIcon } from '../../lib/tones';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides');
+  return guides.map((guide) => ({
+    params: { slug: guide.id },
+    props: { guide },
+  }));
+}
+
+const { guide } = Astro.props;
+const { Content, headings } = await render(guide);
+const rt = readingTime(guide.body);
+const { icon, tone } = guideIconTheme(guide.data.title, guide.data.tags);
+const iconBg = toneSolid[tone];
+
+const allGuides = await getCollection('guides');
+const related = allGuides
+  .filter((g) => g.id !== guide.id)
+  .filter(
+    (g) =>
+      g.data.category === guide.data.category ||
+      g.data.tags.some((t) => guide.data.tags.includes(t))
+  )
+  .slice(0, 4);
+
+const sortedByDate = [...allGuides].sort(
+  (a, b) =>
+    (b.data.pubDate?.getTime() ?? 0) - (a.data.pubDate?.getTime() ?? 0)
+);
+const currentIndex = sortedByDate.findIndex((g) => g.id === guide.id);
+const prevGuide = sortedByDate[currentIndex + 1];
+const nextGuide = sortedByDate[currentIndex - 1];
+
+const faqJsonLd =
+  guide.data.faq && guide.data.faq.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: guide.data.faq.map((f) => ({
+          '@type': 'Question',
+          name: f.question,
+          acceptedAnswer: { '@type': 'Answer', text: f.answer },
+        })),
+      }
+    : null;
+---
+
+<BaseLayout
+  title={`${guide.data.title} — 51NAV`}
+  description={guide.data.description}
+  type="article"
+>
+  <!-- Hero -->
+  <section class="container-page pt-8 md:pt-12">
+    <div
+      class="relative overflow-hidden rounded-2xl border border-line bg-surface p-6 md:p-8"
+    >
+      <div
+        class="absolute inset-0 -z-10 bg-gradient-to-br from-brand-500/5 via-transparent to-transparent"
+        aria-hidden="true"
+      >
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-2 lg:items-center">
+        <div>
+          <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-sm text-muted">
+            <a href="/" class="hover:text-brand-400">Home</a>
+            <Icon name="chevron-right" class="h-4 w-4 text-faint" />
+            <a href="/guides" class="hover:text-brand-400">Guides</a>
+            <Icon name="chevron-right" class="h-4 w-4 text-faint" />
+            <span class="text-ink">{guide.data.title}</span>
+          </nav>
+
+          <div class="mt-5 flex items-start gap-5">
+            <span
+              class={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-white ${iconBg}`}
+            >
+              <Icon name={icon} class="h-8 w-8" />
+            </span>
+            <div>
+              <span
+                class={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${toneIcon[categoryTone[guide.data.category]]}`}
+              >
+                {guide.data.category}
+              </span>
+              <h1 class="mt-1 text-3xl font-bold text-ink md:text-4xl">
+                {guide.data.title}
+              </h1>
+            </div>
+          </div>
+
+          <p class="mt-4 max-w-2xl text-lg text-muted">
+            {guide.data.description}
+          </p>
+
+          <div class="mt-5 flex flex-wrap items-center gap-4 text-sm text-muted">
+            <span class="flex items-center gap-1.5">
+              <Icon name="clock" class="h-4 w-4" />
+              {rt} min read
+            </span>
+            <span class="flex items-center gap-1.5">
+              <Icon name="bar-chart-2" class="h-4 w-4" />
+              {guide.data.difficulty}
+            </span>
+            <div class="flex flex-wrap items-center gap-2">
+              {guide.data.tags.map((t) => (
+                <span class="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs text-muted">
+                  #{t}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <GuidesHeroArt />
+      </div>
+    </div>
+  </section>
+
+  <!-- 3-column reading layout -->
+  <section class="container-page py-8 md:py-12">
+    <div class="grid gap-8 lg:grid-cols-[240px_1fr_260px]">
+      <!-- Left sidebar -->
+      <aside class="hidden lg:block">
+        <div class="sticky top-24 space-y-6">
+          <div class="rounded-card border border-line bg-surface p-4">
+            <h2
+              class="flex items-center gap-2 text-sm font-semibold text-ink"
+            >
+              <Icon name="list" class="h-4 w-4 text-brand-400" />
+              Table of Contents
+            </h2>
+            <GuideTOC headings={headings} class="mt-3" />
+          </div>
+
+          {
+            related.length > 0 && (
+              <div class="rounded-card border border-line bg-surface p-4">
+                <h2 class="flex items-center gap-2 text-sm font-semibold text-ink">
+                  <Icon name="book-open" class="h-4 w-4 text-brand-400" />
+                  Related Guides
+                </h2>
+                <ul class="mt-3 space-y-3">
+                  {related.map((g) => (
+                    <li>
+                      <a href={`/guides/${g.id}`} class="group block">
+                        <span class="line-clamp-2 text-sm font-medium text-ink group-hover:text-brand-400">
+                          {g.data.title}
+                        </span>
+                        <span class="mt-1 block text-xs text-muted">
+                          {g.data.category}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <article class="min-w-0">
+        <details class="mb-6 rounded-card border border-line bg-surface p-4 lg:hidden">
+          <summary class="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-ink">
+            <Icon name="list" class="h-4 w-4 text-brand-400" />
+            Table of Contents
+          </summary>
+          <GuideTOC headings={headings} class="mt-3" />
+        </details>
+
+        <div class="guide-content">
+          <Content />
+        </div>
+
+        {
+          guide.data.faq && guide.data.faq.length > 0 && (
+            <section class="mt-10" aria-labelledby="faq-heading">
+              <h2
+                id="faq-heading"
+                class="text-2xl font-bold text-ink"
+              >
+                Frequently asked questions
+              </h2>
+              <div class="mt-5 space-y-5">
+                {guide.data.faq.map((f) => (
+                  <div class="rounded-card border border-line bg-surface p-5">
+                    <h3 class="text-lg font-semibold text-ink">
+                      {f.question}
+                    </h3>
+                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                      {f.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        }
+
+        <!-- Mobile guide info -->
+        <div class="mt-10 space-y-6 lg:hidden">
+          <div class="rounded-card border border-line bg-surface p-4">
+            <h2 class="text-sm font-semibold text-ink">Guide Info</h2>
+            <dl class="mt-3 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+              <div>
+                <dt class="text-muted">Category</dt>
+                <dd class="mt-0.5 font-medium text-ink">{guide.data.category}</dd>
+              </div>
+              <div>
+                <dt class="text-muted">Difficulty</dt>
+                <dd class="mt-0.5">
+                  <span
+                    class={`rounded-md px-2 py-0.5 text-xs font-medium ${toneIcon[difficultyTone[guide.data.difficulty]]}`}
+                  >
+                    {guide.data.difficulty}
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt class="text-muted">Reading Time</dt>
+                <dd class="mt-0.5 font-medium text-ink">{rt} min</dd>
+              </div>
+              <div>
+                <dt class="text-muted">Tags</dt>
+                <dd class="mt-1.5 flex flex-wrap gap-2">
+                  {guide.data.tags.map((t) => (
+                    <span class="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs text-muted">
+                      #{t}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        {
+          nextGuide && (
+            <div class="mt-10 rounded-card border border-line bg-surface p-5 md:p-6">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-sm font-medium text-brand-400">Next guide</p>
+                  <h3 class="mt-1 text-lg font-semibold text-ink">
+                    {nextGuide.data.title}
+                  </h3>
+                  <p class="mt-1 text-sm text-muted">
+                    {nextGuide.data.description}
+                  </p>
+                </div>
+                <a
+                  href={`/guides/${nextGuide.id}`}
+                  class="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-brand-600 px-4 text-sm font-medium text-white transition hover:bg-brand-500"
+                >
+                  View Next Guide
+                  <Icon name="arrow-right" class="h-4 w-4" />
+                </a>
+              </div>
+            </div>
+          )
+        }
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2">
+          {
+            prevGuide && (
+              <a
+                href={`/guides/${prevGuide.id}`}
+                class="group rounded-card border border-line bg-surface p-4 transition hover:border-line-2 hover:bg-surface-2"
+              >
+                <span class="text-xs text-muted">Previous</span>
+                <h4 class="mt-1 line-clamp-2 font-medium text-ink group-hover:text-brand-400">
+                  {prevGuide.data.title}
+                </h4>
+              </a>
+            )
+          }
+          {
+            nextGuide && (
+              <a
+                href={`/guides/${nextGuide.id}`}
+                class="group rounded-card border border-line bg-surface p-4 text-right transition hover:border-line-2 hover:bg-surface-2"
+              >
+                <span class="text-xs text-muted">Next</span>
+                <h4 class="mt-1 line-clamp-2 font-medium text-ink group-hover:text-brand-400">
+                  {nextGuide.data.title}
+                </h4>
+              </a>
+            )
+          }
+        </div>
+      </article>
+
+      <!-- Right sidebar -->
+      <aside class="hidden lg:block">
+        <div class="sticky top-24 space-y-6">
+          {
+            related.length > 0 && (
+              <div class="rounded-card border border-line bg-surface p-4">
+                <h2 class="flex items-center gap-2 text-sm font-semibold text-ink">
+                  <Icon name="book-open" class="h-4 w-4 text-brand-400" />
+                  Related Guides
+                </h2>
+                <ul class="mt-3 space-y-3">
+                  {related.map((g) => (
+                    <li>
+                      <a href={`/guides/${g.id}`} class="group block">
+                        <span class="line-clamp-2 text-sm font-medium text-ink group-hover:text-brand-400">
+                          {g.data.title}
+                        </span>
+                        <span class="mt-1 block text-xs text-muted">
+                          {g.data.category}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+
+          <div class="rounded-card border border-line bg-surface p-4">
+            <h2 class="text-sm font-semibold text-ink">Guide Info</h2>
+            <dl class="mt-3 space-y-3 text-sm">
+              <div>
+                <dt class="text-muted">Category</dt>
+                <dd class="mt-0.5 font-medium text-ink">
+                  {guide.data.category}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-muted">Difficulty</dt>
+                <dd class="mt-0.5">
+                  <span
+                    class={`rounded-md px-2 py-0.5 text-xs font-medium ${toneIcon[difficultyTone[guide.data.difficulty]]}`}
+                  >
+                    {guide.data.difficulty}
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt class="text-muted">Reading Time</dt>
+                <dd class="mt-0.5 font-medium text-ink">{rt} min</dd>
+              </div>
+              <div>
+                <dt class="text-muted">Tags</dt>
+                <dd class="mt-1.5 flex flex-wrap gap-2">
+                  {guide.data.tags.map((t) => (
+                    <span class="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs text-muted">
+                      #{t}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="rounded-card border border-line bg-surface p-4">
+            <h2 class="text-sm font-semibold text-ink">Share</h2>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button
+                data-share="twitter"
+                class="btn-icon"
+                aria-label="Share on X"
+              >
+                <Icon name="twitter" class="h-4 w-4" />
+              </button>
+              <button
+                data-share="copy"
+                class="btn-icon"
+                aria-label="Copy link"
+              >
+                <Icon name="link" class="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <script>
+    // Code copy buttons
+    (() => {
+      document.querySelectorAll('.guide-content pre').forEach((pre) => {
+        const wrapper = document.createElement('div');
+        wrapper.className =
+          'relative my-5 overflow-hidden rounded-xl border border-line bg-[#0b111b]';
+        const header = document.createElement('div');
+        header.className =
+          'flex items-center justify-between border-b border-line bg-surface-2/50 px-4 py-2';
+        header.innerHTML = `
+          <div class="flex gap-1.5">
+            <span class="h-2.5 w-2.5 rounded-full bg-red-400/70"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-amber-400/70"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-green-400/70"></span>
+          </div>
+          <button type="button" class="copy-btn text-xs font-medium text-muted hover:text-ink">Copy</button>
+        `;
+        pre.parentNode?.insertBefore(wrapper, pre);
+        wrapper.appendChild(header);
+        wrapper.appendChild(pre);
+        pre.classList.remove('my-5', 'rounded-xl', 'bg-slate-900', 'p-4');
+        pre.classList.add('m-0', 'bg-transparent', 'p-4');
+        pre.style.background = 'transparent';
+        pre.style.margin = '0';
+        pre.style.borderRadius = '0';
+        pre.style.padding = '1rem';
+
+        const copyBtn = header.querySelector('.copy-btn');
+        copyBtn?.addEventListener('click', async () => {
+          const code = pre.textContent || '';
+          try {
+            await navigator.clipboard.writeText(code);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => (copyBtn.textContent = 'Copy'), 1500);
+          } catch {
+            copyBtn.textContent = 'Failed';
+          }
+        });
+      });
+    })();
+
+    // Share buttons
+    (() => {
+      document.querySelectorAll('[data-share]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const type = (btn as HTMLElement).dataset.share;
+          const url = window.location.href;
+          if (type === 'twitter') {
+            window.open(
+              `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`,
+              '_blank',
+              'width=600,height=400'
+            );
+          } else if (type === 'copy') {
+            navigator.clipboard
+              .writeText(url)
+              .then(() => {
+                const old = btn.getAttribute('aria-label');
+                btn.setAttribute('aria-label', 'Copied!');
+                setTimeout(
+                  () => btn.setAttribute('aria-label', old ?? 'Copy link'),
+                  1500
+                );
+              })
+              .catch(() => {});
+          }
+        });
+      });
+    })();
+  </script>
+  {
+    faqJsonLd && (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify(faqJsonLd)}
+      />
+    )
+  }
+</BaseLayout>

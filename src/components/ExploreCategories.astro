@@ -1,0 +1,88 @@
+---
+import type { Category } from '../lib/types';
+import Icon from './Icon.astro';
+
+interface Item {
+  category: Category;
+  count: number;
+}
+
+interface Props {
+  items: Item[];
+}
+
+const { items } = Astro.props;
+
+const tileClass: Record<string, string> = {
+  ai: 'bg-violet-500',
+  developer: 'bg-cyan-500',
+  search: 'bg-violet-500',
+  productivity: 'bg-teal-500',
+  design: 'bg-rose-500',
+  cloud: 'bg-blue-500',
+  learning: 'bg-amber-500',
+  business: 'bg-violet-500',
+  finance: 'bg-emerald-500',
+  social: 'bg-violet-500',
+  media: 'bg-violet-500',
+  shopping: 'bg-violet-500',
+  travel: 'bg-sky-500',
+  health: 'bg-rose-500',
+  entertainment: 'bg-violet-500',
+  games: 'bg-violet-500',
+};
+
+const arrowColor: Record<string, string> = {
+  ai: 'text-violet-400',
+  developer: 'text-cyan-400',
+  search: 'text-violet-400',
+  productivity: 'text-teal-400',
+  design: 'text-rose-400',
+  cloud: 'text-blue-400',
+  learning: 'text-amber-400',
+  business: 'text-violet-400',
+  finance: 'text-emerald-400',
+  social: 'text-violet-400',
+  media: 'text-violet-400',
+  shopping: 'text-violet-400',
+  travel: 'text-sky-400',
+  health: 'text-rose-400',
+  entertainment: 'text-violet-400',
+  games: 'text-violet-400',
+};
+---
+
+<section class="section">
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">
+        <Icon name="layout-grid" class="section-icon" /> Explore Categories
+      </h2>
+      <p class="section-sub">Find what you need, faster.</p>
+    </div>
+    <a href="/categories" class="section-link">View All Categories →</a>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+    {
+      items.map(({ category: c, count }) => {
+        const tile = tileClass[c.slug] ?? 'bg-slate-500';
+        return (
+          <a
+            href={`/categories/${c.slug}`}
+            class="group tile flex items-center gap-3 rounded-2xl p-4"
+          >
+            <span class={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${tile}`}>
+              <Icon name={c.icon} class="h-5 w-5 text-white" />
+            </span>
+            <div class="min-w-0 flex-1">
+              <h3 class="truncate font-semibold text-ink">{c.name}</h3>
+              <p class="text-xs text-faint">{count} websites</p>
+            </div>
+            <Icon name="chevron-right" class={`h-5 w-5 shrink-0 ${arrowColor[c.slug] ?? 'text-slate-400'} transition group-hover:translate-x-0.5`} />
+          </a>
+        );
+      })
+    }
+  </div>
+</section>

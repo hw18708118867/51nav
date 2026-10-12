@@ -1,0 +1,108 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { toneIcon } from '../lib/tones';
+import { readingTime } from '../lib/guides';
+import Icon from './Icon.astro';
+
+interface Props {
+  guides: CollectionEntry<'guides'>[];
+}
+
+const { guides } = Astro.props;
+
+const toneByCat: Record<string, string> = {
+  Explained: 'blue',
+  'How-to': 'emerald',
+  default: 'violet',
+};
+
+interface PreviewTheme {
+  gradient: string;
+  icon: string;
+  snippetClass: string;
+}
+
+function guideTheme(g: CollectionEntry<'guides'>): PreviewTheme {
+  const t = (g.data.title + ' ' + (g.data.tags?.join(' ') ?? '')).toLowerCase();
+  if (t.includes('json')) {
+    return { gradient: 'from-blue-600/25 via-slate-900/80 to-slate-950', icon: 'braces', snippetClass: 'text-blue-200/80' };
+  }
+  if (t.includes('jwt')) {
+    return { gradient: 'from-rose-600/25 via-slate-900/80 to-slate-950', icon: 'shield', snippetClass: 'text-rose-200/80' };
+  }
+  if (t.includes('base64')) {
+    return { gradient: 'from-emerald-600/25 via-slate-900/80 to-slate-950', icon: 'binary', snippetClass: 'text-emerald-200/80' };
+  }
+  if (t.includes('tool') || t.includes('developer')) {
+    return { gradient: 'from-violet-600/25 via-slate-900/80 to-slate-950', icon: 'wrench', snippetClass: 'text-violet-200/80' };
+  }
+  return { gradient: 'from-brand-600/25 via-slate-900/80 to-slate-950', icon: 'file-code', snippetClass: 'text-slate-200/80' };
+}
+
+function previewSnippet(body: string): string {
+  const code = body.match(/```[\w]*\n([\s\S]*?)\n```/);
+  if (code) {
+    return code[1]
+      .split('\n')
+      .slice(0, 3)
+      .map((l) => l.replace(/\t/g, '  ').trimEnd().slice(0, 40))
+      .join('\n');
+  }
+  const para = body
+    .split(/\n\s*\n/)[0]
+    .replace(/[#*_`>]/g, '')
+    .trim()
+    .slice(0, 100);
+  return para;
+}
+---
+
+<section class="section">
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">
+        <Icon name="book-open" class="section-icon" /> Learn &amp; Explore
+      </h2>
+      <p class="section-sub">Guides, explainers and developer resources.</p>
+    </div>
+    <a href="/guides" class="section-link">All guides →</a>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {
+      guides.map((g) => {
+        const tone = toneByCat[g.data.category] ?? toneByCat.default;
+        const tag = g.data.category;
+        const rt = readingTime(g.body);
+        const theme = guideTheme(g);
+        const snippet = previewSnippet(g.body);
+        return (
+          <a
+            href={`/guides/${g.id}`}
+            class="group flex h-56 flex-col overflow-hidden rounded-2xl border border-line bg-surface transition hover:-translate-y-0.5 hover:border-line-2 hover:bg-surface-2"
+          >
+            <div class={`relative h-16 overflow-hidden bg-gradient-to-br ${theme.gradient}`}>
+              <Icon name={theme.icon} class="absolute -right-1 -bottom-2 h-16 w-16 text-white/[0.06]" />
+              <div class="absolute inset-x-3 top-2">
+                <div class="flex gap-1">
+                  <span class="h-2 w-2 rounded-full bg-red-400/70"></span>
+                  <span class="h-2 w-2 rounded-full bg-yellow-400/70"></span>
+                  <span class="h-2 w-2 rounded-full bg-green-400/70"></span>
+                </div>
+                <pre class={`mt-1.5 h-[38px] overflow-hidden font-mono text-[9px] leading-[13px] ${theme.snippetClass} whitespace-pre`}>{snippet}</pre>
+              </div>
+              <span class={`absolute right-2 top-2 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${toneIcon[tone]}`}>
+                {tag}
+              </span>
+            </div>
+            <div class="flex flex-col flex-1 p-4">
+              <h3 class="line-clamp-2 font-semibold leading-snug text-ink">{g.data.title}</h3>
+              <p class="mt-1 line-clamp-2 text-sm leading-snug text-muted">{g.data.description}</p>
+              <p class="mt-auto text-xs text-faint">{rt} min read</p>
+            </div>
+          </a>
+        );
+      })
+    }
+  </div>
+</section>

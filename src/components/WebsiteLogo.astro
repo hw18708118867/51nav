@@ -1,0 +1,66 @@
+---
+import type { Website } from '../lib/types';
+import { websiteCategoryMeta } from '../data/websites';
+import { icon as brandIcon } from '../lib/icons';
+import { toneIcon } from '../lib/tones';
+import Icon from './Icon.astro';
+
+interface Props {
+  website: Website;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+}
+
+const { website, size = 'md' } = Astro.props;
+const meta = websiteCategoryMeta[website.category] ?? { icon: 'globe', tone: 'slate' };
+const toneCls = toneIcon[meta.tone];
+const brandSvg = brandIcon(website.id);
+const hostname = new URL(website.url).hostname;
+const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
+const faviconFallback = `https://icons.duckduckgo.com/ip3/${hostname}.ico`;
+
+const containerCls = {
+  sm: 'h-9 w-9 rounded-lg',
+  md: 'h-10 w-10 rounded-xl',
+  lg: 'h-16 w-16 rounded-2xl',
+  xl: 'h-[72px] w-[72px] rounded-2xl',
+  '2xl': 'h-20 w-20 rounded-2xl ring-1 ring-white/15',
+}[size];
+
+const innerCls = {
+  sm: 'h-5 w-5',
+  md: 'h-6 w-6',
+  lg: 'h-10 w-10',
+  xl: 'h-12 w-12',
+  '2xl': 'h-14 w-14',
+}[size];
+
+const fallbackIconCls = {
+  sm: 'h-4 w-4',
+  md: 'h-5 w-5',
+  lg: 'h-8 w-8',
+  xl: 'h-10 w-10',
+  '2xl': 'h-12 w-12',
+}[size];
+---
+
+{
+  brandSvg ? (
+    <span class={`flex ${containerCls} shrink-0 items-center justify-center bg-surface-2 ring-1 ring-line`}>
+      <span class={innerCls} set:html={brandSvg} />
+    </span>
+  ) : (
+    <span class={`flex ${containerCls} shrink-0 items-center justify-center ${toneCls}`}>
+      <img
+        src={faviconUrl}
+        alt=""
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        class={`ws-favicon ${innerCls} object-contain`}
+        onerror="this.onerror=null; this.src='${faviconFallback}';"
+      />
+      <span class={`ws-favicon-fallback hidden ${innerCls} items-center justify-center`}>
+        <Icon name={meta.icon} class={fallbackIconCls} />
+      </span>
+    </span>
+  )
+}

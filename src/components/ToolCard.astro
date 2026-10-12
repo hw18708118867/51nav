@@ -1,0 +1,43 @@
+---
+import type { ToolItem } from '../lib/types';
+import { toneSolid } from '../lib/tones';
+import { sourceMeta } from '../data/toolhub';
+import Icon from './Icon.astro';
+
+interface Props {
+  tool: ToolItem;
+}
+
+const { tool } = Astro.props;
+const solid = toneSolid[tool.tone];
+const source = sourceMeta[tool.source];
+---
+
+<a
+  href={tool.url}
+  target="_blank"
+  rel="noopener noreferrer"
+  class="group tool-card relative flex h-full flex-col rounded-xl border border-line bg-[#0d1420] p-4 transition hover:-translate-y-px hover:border-brand-500/30"
+  data-name={tool.name.toLowerCase()}
+  data-description={tool.description.toLowerCase()}
+  data-category={tool.category}
+  data-source={tool.source}
+>
+  <span class={`absolute right-3 top-3 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${source.badge}`}>
+    {source.label}
+  </span>
+
+  <span class={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${solid}`}>
+    <Icon name={tool.icon} class="h-5 w-5 text-white" />
+  </span>
+
+  <h3 class="mt-3 text-base font-semibold text-ink">{tool.name}</h3>
+  <p class="mt-1 line-clamp-2 flex-1 text-sm leading-relaxed text-muted">{tool.description}</p>
+
+  <div class="mt-4 flex items-center justify-between pt-1">
+    <span class="rounded-md border border-line bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-faint">
+      {tool.category}
+    </span>
+    <Icon name="arrow-right" class="h-4 w-4 text-brand-400 transition group-hover:translate-x-0.5" />
+  </div>
+</a>

@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../../components/BaseLayout.astro';
+import CategoryCard from '../../components/CategoryCard.astro';
+import CategoriesHeroArt from '../../components/CategoriesHeroArt.astro';
+import Icon from '../../components/Icon.astro';
+import { categories } from '../../data/categories';
+import { websites } from '../../data/websites';
+
+const catCounts = categories.map((c) => ({
+  ...c,
+  count: websites.filter((w) => w.category === c.slug).length,
+}));
+---
+
+<BaseLayout
+  title="Categories — 51NAV"
+  description="Browse all categories and discover the best websites, tools and resources for your work, learning and everyday life."
+>
+  <!-- Hero -->
+  <section class="container-page pt-12 pb-8 md:pt-16 md:pb-10">
+    <div class="grid gap-8 lg:grid-cols-2 lg:items-start">
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-brand-400">
+          Categories
+        </div>
+        <h1 class="mt-2 text-4xl font-bold text-ink md:text-5xl">Explore Categories</h1>
+        <p class="mt-3 max-w-2xl text-lg text-muted">
+          Browse all categories and discover the best websites, tools and resources for your
+          work, learning and everyday life.
+        </p>
+
+        <!-- Search -->
+        <div
+          id="categories-search-bar"
+          class="mt-6 flex h-[50px] max-w-2xl items-center gap-3 rounded-xl border border-slate-700/40 bg-[#0d1420] px-3 transition"
+        >
+          <Icon name="search" class="h-5 w-5 text-faint" />
+          <input
+            id="categories-search"
+            type="text"
+            placeholder="Search categories..."
+            class="flex-1 bg-transparent pl-2 text-sm text-ink placeholder:text-faint outline-none"
+            autocomplete="off"
+          />
+          <kbd
+            class="hidden items-center gap-1 rounded-md border border-line bg-surface px-1.5 py-0.5 text-[11px] font-medium text-muted sm:inline-flex"
+          >
+            <Icon name="command" class="h-3 w-3" />K
+          </kbd>
+        </div>
+      </div>
+
+      <CategoriesHeroArt />
+    </div>
+  </section>
+
+  <!-- Directory -->
+  <section class="container-page pb-16 md:pb-20">
+    <div class="mb-5 flex items-end justify-between gap-4">
+      <div>
+        <h2 class="flex items-center gap-2 text-xl font-bold text-ink sm:text-2xl">
+          <Icon name="layout-grid" class="h-5 w-5 text-brand-400" /> All Categories
+        </h2>
+        <p class="mt-1 text-sm text-muted">
+          <span id="categories-count">{catCounts.length}</span> categories
+        </p>
+      </div>
+    </div>
+
+    <div id="categories-grid" class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {catCounts.map((c) => <CategoryCard category={c} />)}
+    </div>
+
+    <p id="categories-empty" class="mt-8 hidden text-sm text-muted">No categories match your search.</p>
+  </section>
+
+  <script>
+    (() => {
+      const input = document.getElementById('categories-search') as HTMLInputElement | null;
+      const grid = document.getElementById('categories-grid');
+      const countEl = document.getElementById('categories-count');
+      const emptyEl = document.getElementById('categories-empty');
+      const cards = grid ? Array.from(grid.querySelectorAll<HTMLElement>('[data-name]')) : [];
+
+      function normalize(s: string) {
+        return s.trim().toLowerCase();
+      }
+
+      function filter() {
+        const q = normalize(input?.value ?? '');
+        let visible = 0;
+        cards.forEach((card) => {
+          const name = normalize(card.dataset.name ?? '');
+          const tagline = normalize(card.dataset.tagline ?? '');
+          const matches = !q || name.includes(q) || tagline.includes(q);
+          card.classList.toggle('hidden', !matches);
+          if (matches) visible++;
+        });
+        if (countEl) countEl.textContent = String(visible);
+        if (emptyEl) emptyEl.classList.toggle('hidden', visible > 0);
+      }
+
+      input?.addEventListener('input', filter);
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          const palette = document.getElementById('search-modal');
+          if (palette && !palette.classList.contains('hidden')) return;
+          input?.focus();
+        }
+      });
+
+      filter();
+    })();
+  </script>
+</BaseLayout>

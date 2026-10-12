@@ -1,0 +1,473 @@
+---
+import BaseLayout from '../../components/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import WebsiteLogo from '../../components/WebsiteLogo.astro';
+import WebsiteHeroArt from '../../components/WebsiteHeroArt.astro';
+import WebsiteRelatedCard from '../../components/WebsiteRelatedCard.astro';
+import { websites, getRelatedWebsites, websiteCategoryMeta, getWebsiteTypeLabel } from '../../data/websites';
+import { getCategory } from '../../data/categories';
+import { toneIcon } from '../../lib/tones';
+import type { Tone } from '../../lib/tones';
+
+export function getStaticPaths() {
+  return websites.map((w) => ({ params: { slug: w.id } }));
+}
+
+const { slug } = Astro.params;
+const site = websites.find((w) => w.id === slug)!;
+const cat = getCategory(site.category);
+const related = getRelatedWebsites(site, 8);
+const meta = websiteCategoryMeta[site.category] ?? { icon: 'globe', tone: 'slate' };
+const typeLabel = getWebsiteTypeLabel(site.category);
+const title = `${site.name} — ${cat?.name ?? 'Website'} | 51NAV`;
+const displayHostname = new URL(site.url).hostname.replace(/^www\./, '');
+
+const rating = site.rating;
+const ratingCount = site.ratingCount;
+
+// Pad hero tags to a consistent count (~5-6) using truthful category-level
+// descriptors so every site's Hero looks as balanced as GitHub's.
+const CATEGORY_POOL: Record<string, string[]> = {
+  ai: ['AI', 'Assistant', 'Automation', 'Productivity', 'Chat', 'Models'],
+  developer: ['Developer', 'Code', 'Open Source', 'Tools', 'Collaboration', 'API'],
+  search: ['Search', 'Discovery', 'Web', 'Reference', 'Browser', 'Privacy'],
+  productivity: ['Productivity', 'Workflow', 'Tasks', 'Notes', 'Organization', 'Automation'],
+  design: ['Design', 'UI', 'Graphics', 'Prototype', 'Creative', 'Tools'],
+  cloud: ['Cloud', 'Storage', 'Hosting', 'Infrastructure', 'API', 'DevOps'],
+  learning: ['Learning', 'Courses', 'Education', 'Tutorials', 'Skills', 'Knowledge'],
+  business: ['Business', 'SaaS', 'Collaboration', 'Workflow', 'Analytics', 'Team'],
+  finance: ['Finance', 'Fintech', 'Banking', 'Investing', 'Crypto', 'Payments'],
+  social: ['Social', 'Community', 'Networking', 'Messaging', 'Sharing', 'Profiles'],
+  media: ['Media', 'Video', 'Streaming', 'Music', 'News', 'Content'],
+  shopping: ['Shopping', 'Ecommerce', 'Deals', 'Marketplace', 'Retail', 'Products'],
+  travel: ['Travel', 'Booking', 'Flights', 'Hotels', 'Maps', 'Trips'],
+  health: ['Health', 'Wellness', 'Medical', 'Fitness', 'Care', 'Resources'],
+  entertainment: ['Entertainment', 'Streaming', 'Games', 'Movies', 'Music', 'Fun'],
+  games: ['Games', 'Gaming', 'Play', 'Multiplayer', 'Console', 'PC'],
+};
+
+const heroTags = (() => {
+  const base = site.heroTags?.length
+    ? site.heroTags
+    : [cat?.name, ...site.tags].filter((t): t is string => Boolean(t));
+  if (base.length >= 5) return base.slice(0, 6);
+  const pool = CATEGORY_POOL[site.category] ?? [];
+  const seen = new Set(base.map((t) => t.toLowerCase()));
+  const padded = base.slice();
+  for (const t of pool) {
+    if (padded.length >= 6) break;
+    if (!seen.has(t.toLowerCase())) {
+      padded.push(t);
+      seen.add(t.toLowerCase());
+    }
+  }
+  return padded;
+})();
+
+// Right sidebar “Key Features” — pad with truthful category/type descriptors
+// so short-tag sites (e.g. Google) don’t leave the column visually empty.
+const featureTags = (() => {
+  const base = [...site.tags];
+  const extras = [typeLabel, cat?.name, ...(CATEGORY_POOL[site.category] ?? [])].filter((t): t is string => Boolean(t));
+  const seen = new Set(base.map((t) => t.toLowerCase()));
+  const out = base.slice();
+  for (const t of extras) {
+    if (out.length >= 5) break;
+    if (!seen.has(t.toLowerCase())) {
+      out.push(t);
+      seen.add(t.toLowerCase());
+    }
+  }
+  return out;
+})();
+
+// Keep the hero description close to GitHub's length so short entries don't
+// look empty. Pad only with a truthful category/type phrase, never fake claims.
+const heroDescription = (() => {
+  const d = (site.description ?? '').trim();
+  if (d.split(/\s+/).filter(Boolean).length >= 8) return d;
+  const suffix = `A ${typeLabel.toLowerCase()} in the ${cat?.name ?? 'web'} space, listed on 51NAV.`;
+  return (d ? d + ' ' : '') + suffix;
+})();
+
+const FEATURE_TONES: Tone[] = ['blue', 'indigo', 'violet', 'emerald', 'cyan', 'amber', 'rose', 'green'];
+const FEATURE_ICONS = ['check', 'zap', 'star', 'shield-check', 'sparkles', 'layers', 'bookmark', 'target'];
+---
+
+<BaseLayout title={title} description={site.description}>
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="text-sm text-muted">
+      <ol class="flex flex-wrap items-center gap-2">
+        <li>
+          <a href="/" class="transition hover:text-brand-400" aria-label="Home">
+            <Icon name="home" class="h-3.5 w-3.5" />
+          </a>
+        </li>
+        <li><Icon name="chevron-right" class="h-3.5 w-3.5 text-faint" /></li>
+        <li>
+          <a href="/websites" class="transition hover:text-brand-400">Websites</a>
+        </li>
+        {
+          cat && (
+            <>
+              <li><Icon name="chevron-right" class="h-3.5 w-3.5 text-faint" /></li>
+              <li>
+                <a href={`/websites?category=${cat.slug}`} class="transition hover:text-brand-400">
+                  {cat.name}
+                </a>
+              </li>
+            </>
+          )
+        }
+        <li><Icon name="chevron-right" class="h-3.5 w-3.5 text-faint" /></li>
+        <li class="text-ink">{site.name}</li>
+      </ol>
+    </nav>
+
+    <!-- Hero -->
+    <section class="mt-6 overflow-hidden rounded-2xl border border-line bg-gradient-to-br from-[#0d1420] to-[#0b101b] p-6 md:px-10 md:py-8">
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto_300px] lg:items-stretch lg:gap-10">
+        <div class="flex items-start gap-4 md:gap-6">
+          <div class="relative shrink-0">
+            <div class="absolute inset-0 rounded-3xl bg-brand-500/30 blur-xl" aria-hidden="true"></div>
+            <div class="absolute -inset-1 rounded-3xl bg-gradient-to-b from-brand-400/20 to-purple-500/10 blur-md" aria-hidden="true"></div>
+            <div class="relative">
+              <WebsiteLogo website={site} size="2xl" />
+            </div>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-3">
+              <h1 class="text-3xl font-bold text-ink md:text-4xl">{site.name}</h1>
+              {
+                cat && (
+                  <span class="inline-flex items-center rounded-full border border-brand-500/20 bg-brand-500/10 px-2.5 py-0.5 text-xs font-medium text-brand-400">
+                    {cat.name}
+                  </span>
+                )
+              }
+            </div>
+            <p class="mt-2 max-w-2xl text-base leading-relaxed text-muted">{heroDescription}</p>
+
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              {
+                rating != null && ratingCount != null && (
+                  <span class="inline-flex items-center gap-1 rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-medium text-faint">
+                    <Icon name="star" class="h-3 w-3 fill-current text-brand-400" />
+                    {rating}
+                    <span class="text-faint/70">({ratingCount})</span>
+                  </span>
+                )
+              }
+              <span class="rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-medium text-faint">
+                {typeLabel}
+              </span>
+              {
+                site.featured && (
+                  <span class="rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-medium text-faint">
+                    Popular
+                  </span>
+                )
+              }
+            </div>
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              {
+                heroTags.map((tag) => (
+                  <span class="rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-medium text-faint">
+                    {tag}
+                  </span>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Visit button: middle column, bottom aligned with the hero content -->
+        <div class="flex flex-col items-center gap-1.5 self-end lg:-translate-y-5 lg:order-none">
+          <a
+            href={site.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-accent w-full sm:w-auto"
+          >
+            <Icon name="external-link" class="h-4 w-4" />
+            Visit {site.name}
+          </a>
+          <span class="text-[10px] text-faint">Opens in a new tab</span>
+        </div>
+
+        <!-- Illustration: right column, stretches to match the left content height -->
+        <div class="self-stretch">
+          <WebsiteHeroArt website={site} />
+        </div>
+      </div>
+    </section>
+
+    <!-- Main 3-column layout -->
+    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr_300px] lg:items-stretch">
+      <!-- Left sidebar -->
+      <aside class="flex flex-col">
+        <div class="flex h-full flex-col divide-y divide-line rounded-2xl border border-line bg-[#0d1420]">
+          <!-- On this page -->
+          <nav class="p-5" aria-label="Page sections">
+          <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-faint">On this page</h2>
+          <ul class="space-y-1" id="detail-nav">
+            <li>
+              <a
+                href="#overview"
+                data-target="overview"
+                class="detail-nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink bg-surface transition hover:bg-surface hover:text-ink"
+              >
+                <Icon name="layout-dashboard" class="h-4 w-4 text-brand-400" />
+                Overview
+              </a>
+            </li>
+            <li>
+              <a
+                href="#features"
+                data-target="features"
+                class="detail-nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-surface hover:text-ink"
+              >
+                <Icon name="list-checks" class="h-4 w-4 text-faint" />
+                Features
+              </a>
+            </li>
+            <li>
+              <a
+                href="#related"
+                data-target="related"
+                class="detail-nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-surface hover:text-ink"
+              >
+                <Icon name="globe" class="h-4 w-4 text-faint" />
+                Related Websites
+              </a>
+            </li>
+            <li>
+              <a
+                href="#tags"
+                data-target="tags"
+                class="detail-nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-surface hover:text-ink"
+              >
+                <Icon name="tag" class="h-4 w-4 text-faint" />
+                Tags
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+          <!-- Tags -->
+          <section id="tags" class="p-5">
+            <h2 class="mb-3 text-sm font-semibold text-ink">Tags</h2>
+            <div class="flex flex-wrap gap-2">
+              {
+                site.tags.map((tag) => (
+                  <span class="rounded-full border border-line bg-surface px-2 py-1 text-xs font-medium text-faint capitalize">
+                    {tag}
+                  </span>
+                ))
+              }
+            </div>
+          </section>
+
+          <!-- Website Information -->
+          <section class="p-5">
+            <h2 class="mb-4 text-sm font-semibold text-ink">Website Information</h2>
+          <dl class="space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+              <dt class="inline-flex items-center gap-1.5 text-muted">
+                <Icon name="folder" class="h-3.5 w-3.5 text-faint" />
+                Category
+              </dt>
+              <dd class="text-ink">{cat?.name ?? '—'}</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="inline-flex items-center gap-1.5 text-muted">
+                <Icon name="briefcase" class="h-3.5 w-3.5 text-faint" />
+                Type
+              </dt>
+              <dd class="text-ink">{typeLabel}</dd>
+            </div>
+            <div class="flex items-start justify-between gap-3">
+              <dt class="inline-flex shrink-0 items-center gap-1.5 text-muted">
+                <Icon name="external-link" class="h-3.5 w-3.5 text-faint" />
+                Official Website
+              </dt>
+              <dd class="min-w-0 text-right">
+                <a
+                  href={site.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex max-w-full items-center gap-1 text-brand-400 transition hover:text-brand-300"
+                >
+                  <span class="truncate">{displayHostname}</span>
+                  <Icon name="external-link" class="h-3 w-3 shrink-0" />
+                </a>
+              </dd>
+            </div>
+          </dl>
+          </section>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <div class="flex flex-col">
+        <section id="overview" class="h-full rounded-2xl border border-line bg-[#0d1420] p-6">
+          <div class="mb-4 flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
+              <Icon name="layout-dashboard" class="h-4 w-4" />
+            </span>
+            <h2 class="text-lg font-semibold text-ink">Overview</h2>
+          </div>
+          <p class="leading-relaxed text-muted">{site.description}</p>
+          <p class="mt-3 leading-relaxed text-muted">
+            Explore {site.name} to see how it fits into the {cat?.name ?? ''} category. Browse the related
+            websites below or visit the official site to get started.
+          </p>
+
+          <h3 class="mb-3 mt-6 text-base font-semibold text-ink">
+            What can you do with {site.name}?
+          </h3>
+          <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {
+              site.tags.map((tag) => (
+                <li class="flex items-center gap-2.5">
+                  <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-500/10 text-brand-400">
+                    <Icon name="check" class="h-3 w-3" />
+                  </span>
+                  <span class="text-sm capitalize text-ink">{tag}</span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <h3 class="mb-2 mt-6 text-base font-semibold text-ink">Who is it for?</h3>
+          <p class="text-sm leading-relaxed text-muted">
+            Users looking for {typeLabel.toLowerCase()} solutions.
+          </p>
+
+          <h3 class="mb-2 mt-4 text-base font-semibold text-ink">Why is it useful?</h3>
+          <p class="text-sm leading-relaxed text-muted">{site.description}</p>
+        </section>
+      </div>
+
+      <!-- Right sidebar -->
+      <aside class="flex flex-col">
+        <section id="features" class="flex h-full flex-col rounded-2xl border border-line bg-[#0d1420] p-5">
+          <div class="mb-4 flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
+              <Icon name="zap" class="h-4 w-4" />
+            </span>
+            <h2 class="text-base font-semibold text-ink">Key Features</h2>
+          </div>
+          <div class="flex-1 space-y-3">
+            {
+              featureTags.map((tag, i) => {
+                const featureTone = FEATURE_TONES[i % FEATURE_TONES.length];
+                const featureIcon = FEATURE_ICONS[i % FEATURE_ICONS.length];
+                const featureToneCls = toneIcon[featureTone];
+                return (
+                  <div class="flex items-start gap-3">
+                    <span class={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${featureToneCls}`}>
+                      <Icon name={featureIcon} class="h-4 w-4" />
+                    </span>
+                    <div class="min-w-0 flex-1 pt-0.5">
+                      <h4 class="text-sm font-medium capitalize text-ink">{tag}</h4>
+                    </div>
+                  </div>
+                );
+              })
+            }
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- Related Websites -->
+    {
+      related.length > 0 && (
+        <section id="related" class="mt-10">
+          <div class="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <h2 class="flex items-center gap-2 text-xl font-bold text-ink">
+                <Icon name="globe" class="h-5 w-5 text-brand-400" />
+                Related Websites
+              </h2>
+              <p class="mt-1 text-sm text-muted">You might also be interested in these similar websites.</p>
+            </div>
+            {cat && (
+              <a href={`/websites?category=${cat.slug}`} class="section-link inline-flex items-center gap-1">
+                View all
+                <Icon name="arrow-right" class="h-3 w-3" />
+              </a>
+            )}
+          </div>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {related.map((w) => (
+              <WebsiteRelatedCard website={w} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Bottom CTA -->
+    <section class="mt-10 rounded-2xl border border-line bg-[#0d1420] p-6">
+      <div class="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+        <div class="flex items-center gap-4">
+          <WebsiteLogo website={site} size="md" />
+          <div>
+            <h2 class="text-lg font-semibold text-ink">Ready to try {site.name}?</h2>
+            <p class="mt-0.5 text-sm text-muted">Visit the official website to get started.</p>
+          </div>
+        </div>
+        <div class="flex w-full flex-col items-start gap-1 sm:w-auto sm:items-end">
+          <a
+            href={site.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-accent w-full sm:w-auto"
+          >
+            Visit {site.name}
+            <Icon name="external-link" class="h-4 w-4" />
+          </a>
+          <span class="text-[10px] text-faint">Opens in a new tab</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const navLinks = document.querySelectorAll<HTMLAnchorElement>('.detail-nav-link');
+      const sections = Array.from(navLinks)
+        .map((a) => document.getElementById(a.dataset.target!))
+        .filter(Boolean) as HTMLElement[];
+      if (!sections.length) return;
+
+      const setActive = (id: string) => {
+        navLinks.forEach((link) => {
+          const active = link.dataset.target === id;
+          link.classList.toggle('bg-surface', active);
+          link.classList.toggle('text-ink', active);
+          link.classList.toggle('text-muted', !active);
+          const icon = link.querySelector('svg');
+          if (icon) {
+            icon.classList.toggle('text-brand-400', active);
+            icon.classList.toggle('text-faint', !active);
+          }
+        });
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) setActive(entry.target.id);
+          });
+        },
+        { rootMargin: '-10% 0px -60% 0px', threshold: 0 }
+      );
+
+      sections.forEach((s) => observer.observe(s));
+    })();
+  </script>
+</BaseLayout>

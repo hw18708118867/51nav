@@ -1,0 +1,302 @@
+---
+import { defaultShortcuts, shortcutCategories, shortcutIconOptions } from '../data/shortcuts';
+import Icon from './Icon.astro';
+import { icon as inlineIcon } from '../lib/icons';
+import { faviconUrl } from '../lib/favicon';
+
+interface Props { manage?: boolean; }
+const { manage = false } = Astro.props;
+const initial = defaultShortcuts;
+---
+
+<section class="section">
+  <div class="rounded-2xl border border-line bg-surface/60 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)]">
+    <div class="section-head">
+    <div>
+      <h2 class="section-title">
+        <Icon name="zap" class="section-icon" /> My Shortcuts
+      </h2>
+      <p class="section-sub">Quick access to your favorite websites.</p>
+    </div>
+    <a href="/favorites" class="section-link">Manage →</a>
+  </div>
+
+  <div data-sc-grid data-manage={String(manage)} class="flex flex-wrap gap-3">
+    {
+      initial.map((s) => (
+        <a
+          href={s.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          draggable={manage ? 'true' : 'false'}
+          data-id={s.id}
+          class="group relative flex w-24 flex-col items-center gap-1 rounded-xl border border-line bg-surface p-2 text-center transition duration-200 hover:border-line-2 hover:bg-surface-2"
+        >
+          {manage && (
+            <button
+              data-remove-shortcut={s.id}
+              aria-label={`Remove ${s.name}`}
+              class="absolute right-1 top-1 hidden rounded-full bg-black/50 p-1 text-slate-300 hover:text-white group-hover:block"
+            >
+              <Icon name="x" class="h-3 w-3" />
+            </button>
+          )}
+          {inlineIcon(s.icon) && s.icon !== 'auto' ? (
+            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2">
+              <Icon name={s.icon} class="h-5 w-5" />
+            </span>
+          ) : s.icon === 'auto' && faviconUrl(s.url) ? (
+            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2">
+              <img
+                src={faviconUrl(s.url)!}
+                alt=""
+                loading="lazy"
+                class="h-5 w-5 rounded"
+                onerror="this.nextElementSibling.classList.remove('hidden'); this.remove();"
+              />
+              <span class="hidden"><Icon name="globe" class="h-5 w-5" /></span>
+            </span>
+          ) : (
+            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2">
+              <Icon name="globe" class="h-5 w-5" />
+            </span>
+          )}
+          <span class="w-full truncate text-[12px] font-medium leading-tight text-ink">{s.name}</span>
+          <span class="w-full truncate text-[10px] leading-tight text-faint">{s.category}</span>
+        </a>
+      ))
+    }
+    {manage && (
+      <button
+        data-add-shortcut
+        class="group relative flex w-24 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-line bg-surface/40 p-2 text-muted transition duration-200 hover:border-brand-400/40 hover:text-brand-400"
+      >
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg border border-dashed border-line-2">
+          <Icon name="plus" class="h-5 w-5" />
+        </span>
+        <span class="text-[12px] font-medium leading-tight">Add</span>
+      </button>
+    )}
+  </div>
+
+  {manage && (
+    <div
+      data-sc-form
+      class="mt-4 hidden flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4"
+    >
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_160px]">
+        <input
+          data-sc-name
+          type="text"
+          placeholder="Name (e.g. Reddit)"
+          class="w-full rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-white outline-none focus:border-brand-400"
+        />
+        <input
+          data-sc-url
+          type="text"
+          placeholder="https://…"
+          class="w-full rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-white outline-none focus:border-brand-400"
+        />
+        <select
+          data-sc-category
+          class="w-full rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-white outline-none focus:border-brand-400"
+        >
+          {shortcutCategories.map((c) => (
+            <option value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <span class="mb-2 block text-xs text-slate-400">Icon</span>
+        <div class="flex flex-wrap gap-2">
+          {shortcutIconOptions.map((name) => (
+            <button
+              type="button"
+              data-sc-icon={name}
+              data-selected={name === 'auto'}
+              class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-surface transition hover:border-line-2 hover:bg-surface-2 data-[selected]:border-brand-400 data-[selected]:bg-brand-500/10"
+              aria-label={`Select ${name} icon`}
+            >
+              <Icon name={name} class="h-5 w-5" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button
+          data-sc-save
+          class="shrink-0 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500"
+          >Add</button
+        >
+        <button
+          data-sc-cancel
+          class="shrink-0 rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-300 hover:bg-white/5"
+          >Cancel</button
+        >
+      </div>
+    </div>
+  )}
+  </div>
+</section>
+
+<script>
+  import { icon } from '../lib/icons';
+  import { defaultShortcuts } from '../data/shortcuts';
+  import { faviconUrl } from '../lib/favicon';
+
+  const KEY = '51nav:shortcuts';
+  const grid = document.querySelector('[data-sc-grid]');
+  const isManage = grid?.dataset.manage === 'true';
+  const form = document.querySelector('[data-sc-form]');
+  const nameInput = document.querySelector('[data-sc-name]');
+  const urlInput = document.querySelector('[data-sc-url]');
+  const categoryInput = document.querySelector('[data-sc-category]');
+  let selectedIcon = 'auto';
+
+  const getShortcuts = () => {
+    try {
+      const v = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (Array.isArray(v) && v.length) return v;
+    } catch {}
+    return defaultShortcuts;
+  };
+  const save = (arr: any[]) => localStorage.setItem(KEY, JSON.stringify(arr));
+
+  const setIcon = (name: string) => {
+    selectedIcon = name;
+    form?.querySelectorAll('[data-sc-icon]').forEach((btn) => {
+      const active = btn.getAttribute('data-sc-icon') === name;
+      if (active) btn.setAttribute('data-selected', '');
+      else btn.removeAttribute('data-selected');
+    });
+  };
+
+  form?.addEventListener('click', (e) => {
+    const iconBtn = (e.target as HTMLElement).closest('[data-sc-icon]');
+    if (iconBtn) {
+      e.preventDefault();
+      setIcon(iconBtn.getAttribute('data-sc-icon') || 'auto');
+    }
+  });
+
+  const esc = (s: string) =>
+    String(s).replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c)
+    );
+
+  const iconBlock = (s: any) => {
+    const name = s.icon;
+    if (name === 'auto' || !name || name === 'globe' || !icon(name)) {
+      if (name === 'auto') {
+        const fav = faviconUrl(s.url);
+        if (fav) {
+          return `<span class="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2"><img src="${esc(fav)}" alt="" loading="lazy" class="h-5 w-5 rounded" onerror="this.nextElementSibling.classList.remove('hidden'); this.remove();" /><span class="hidden">${icon('globe')}</span></span>`;
+        }
+      }
+      return `<span class="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2">${icon('globe')}</span>`;
+    }
+    return `<span class="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2">${icon(name)}</span>`;
+  };
+
+  const tileHtml = (s: any, isAdd = false) => {
+    if (isAdd) {
+      return `<button data-add-shortcut class="group relative flex w-24 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-line bg-surface/40 p-2 text-muted transition duration-200 hover:border-brand-400/40 hover:text-brand-400">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg border border-dashed border-line-2">${icon('plus')}</span>
+        <span class="text-[12px] font-medium leading-tight">Add</span>
+      </button>`;
+    }
+    const rmBtn = isManage ? `<button data-remove-shortcut="${esc(s.id)}" aria-label="Remove ${esc(s.name)}" class="absolute right-1 top-1 hidden rounded-full bg-black/50 p-1 text-slate-300 hover:text-white group-hover:block">${icon('x')}</button>` : '';
+    return `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" draggable="${isManage}" data-id="${esc(s.id)}" class="group relative flex w-24 flex-col items-center gap-1 rounded-xl border border-line bg-surface p-2 text-center transition duration-200 hover:border-line-2 hover:bg-surface-2">
+      ${rmBtn}
+      ${iconBlock(s)}
+      <span class="w-full truncate text-[12px] font-medium leading-tight text-ink">${esc(s.name)}</span>
+      <span class="w-full truncate text-[10px] leading-tight text-faint">${esc(s.category)}</span>
+    </a>`;
+  };
+
+  function render() {
+    if (!grid) return;
+    const items = getShortcuts();
+    grid.innerHTML = items.map((s) => tileHtml(s)).join('') + (isManage ? tileHtml(null, true) : '');
+    if (isManage) bindDrag();
+  }
+
+  function bindDrag() {
+    let dragId: string | null = null;
+    grid?.querySelectorAll('[data-id]').forEach((el) => {
+      el.addEventListener('dragstart', () => (dragId = el.getAttribute('data-id')));
+      el.addEventListener('dragover', (e) => e.preventDefault());
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const target = el.getAttribute('data-id');
+        if (!dragId || dragId === target) return;
+        const items = getShortcuts();
+        const from = items.findIndex((x) => x.id === dragId);
+        const to = items.findIndex((x) => x.id === target);
+        if (from < 0 || to < 0) return;
+        const [moved] = items.splice(from, 1);
+        items.splice(to, 0, moved);
+        save(items);
+        render();
+      });
+    });
+  }
+
+  grid?.addEventListener('click', (e) => {
+    const rm = (e.target as HTMLElement).closest('[data-remove-shortcut]');
+    if (rm) {
+      e.preventDefault();
+      const id = rm.getAttribute('data-remove-shortcut');
+      save(getShortcuts().filter((x) => x.id !== id));
+      render();
+      return;
+    }
+    if ((e.target as HTMLElement).closest('[data-add-shortcut]')) {
+      form?.classList.remove('hidden');
+      form?.classList.add('flex');
+      if (nameInput) (nameInput as HTMLInputElement).value = '';
+      if (urlInput) (urlInput as HTMLInputElement).value = '';
+      if (categoryInput) (categoryInput as HTMLSelectElement).selectedIndex = 0;
+      setIcon('auto');
+      (nameInput as HTMLElement)?.focus();
+    }
+  });
+
+  document.querySelector('[data-sc-cancel]')?.addEventListener('click', () => {
+    form?.classList.add('hidden');
+    form?.classList.remove('flex');
+    if (nameInput) (nameInput as HTMLInputElement).value = '';
+    if (urlInput) (urlInput as HTMLInputElement).value = '';
+    if (categoryInput) (categoryInput as HTMLSelectElement).selectedIndex = 0;
+    setIcon('auto');
+  });
+
+  document.querySelector('[data-sc-save]')?.addEventListener('click', () => {
+    const name = (nameInput as HTMLInputElement)?.value.trim();
+    let url = (urlInput as HTMLInputElement)?.value.trim();
+    if (!name || !url) return;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    const items = getShortcuts();
+    items.push({
+      id: 'c-' + Date.now(),
+      name,
+      url,
+      category: (categoryInput as HTMLSelectElement)?.value || 'Other',
+      color: 'slate',
+      icon: selectedIcon,
+    });
+    save(items);
+    render();
+    form?.classList.add('hidden');
+    form?.classList.remove('flex');
+    if (nameInput) (nameInput as HTMLInputElement).value = '';
+    if (urlInput) (urlInput as HTMLInputElement).value = '';
+    if (categoryInput) (categoryInput as HTMLSelectElement).selectedIndex = 0;
+    setIcon('auto');
+  });
+
+  render();
+  window.addEventListener('storage', render);
+</script>

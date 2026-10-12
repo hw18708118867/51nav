@@ -1,0 +1,47 @@
+---
+import { getLandmarkImage } from '../lib/landmarkImages';
+
+// Base fallback shown before the geo photo resolves (or if it fails to load).
+const fallback = getLandmarkImage('');
+---
+
+<!-- Full-bleed scenic photo, swapped per visitor country. The left side is
+     darkened and the bottom fades into the page canvas so hero text stays
+     legible over the image. -->
+<div class="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+  <!-- Base gradient (visible before the photo loads / if it fails) -->
+  <div class="absolute inset-0 bg-gradient-to-b from-[#080c22] via-[#15193d] to-[#3a2554]"></div>
+
+  <!-- Country-specific photo -->
+  <img
+    data-hero-bg
+    src={fallback}
+    alt=""
+    fetchpriority="high"
+    class="absolute inset-0 h-full w-full object-cover"
+  />
+
+  <!-- Left-to-right dark overlay: keeps hero text legible on the left -->
+  <div class="absolute inset-0 bg-gradient-to-r from-[#06070f]/95 via-[#06070f]/55 to-transparent"></div>
+
+  <!-- Short, subtle top blend into the page canvas (no oppressive darkening) -->
+  <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#06070f]/45 to-transparent"></div>
+
+  <!-- Bottom fade into the page canvas -->
+  <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#06070f] to-transparent"></div>
+</div>
+
+<script>
+  import { getLocation } from '../lib/geo';
+  import { getLandmarkImage } from '../lib/landmarkImages';
+
+  const img = document.querySelector<HTMLImageElement>('[data-hero-bg]');
+  if (img) {
+    getLocation()
+      .then((loc) => {
+        const next = getLandmarkImage(loc.countryCode);
+        if (next !== img.getAttribute('src')) img.src = next;
+      })
+      .catch(() => {});
+  }
+</script>

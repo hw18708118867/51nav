@@ -1,0 +1,161 @@
+---
+import '../styles/global.css';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import CommandPalette from './CommandPalette.astro';
+import SettingsPanel from './SettingsPanel.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  type?: 'website' | 'article';
+}
+
+const {
+  title,
+  description = '51NAV — Your Internet Start Page. Useful Tools, Websites & Resources.',
+  type = 'website',
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const siteName = '51NAV';
+
+// Analytics / verification are injected from GitHub Actions secrets (PUBLIC_ vars).
+// Leave them empty in local/dev builds — the tags are simply skipped.
+const ga4Id = import.meta.env.PUBLIC_GA4_MEASUREMENT_ID;
+const gscCode = import.meta.env.PUBLIC_GSC_VERIFICATION;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Search Console verification (set PUBLIC_GSC_VERIFICATION in CI) -->
+    {
+      gscCode && (
+        <meta name="google-site-verification" content={gscCode} />
+      )
+    }
+
+    <!-- Google Analytics 4 (set PUBLIC_GA4_MEASUREMENT_ID in CI) -->
+    {
+      ga4Id && (
+        <script
+          is:inline
+          src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}
+        />
+      )
+    }
+    {
+      ga4Id && (
+        <script
+          is:inline
+          set:html={`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${ga4Id}');`}
+        />
+      )
+    }
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: siteName,
+        url: Astro.site?.toString(),
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${Astro.site}search?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      })}
+    />
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <div class="dash-bg" aria-hidden="true"></div>
+
+    <Header />
+    <CommandPalette />
+    <SettingsPanel />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // ----- Theme: V2 is dark-only -----
+      const root = document.documentElement;
+      root.classList.add('dark');
+
+      // ----- Favorites (localStorage) -----
+      const FAV_KEY = '51nav:favorites';
+      const getFavs = (): string[] => {
+        try {
+          return JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+        } catch {
+          return [];
+        }
+      };
+      const setFavs = (ids: string[]) => localStorage.setItem(FAV_KEY, JSON.stringify(ids));
+
+      function updateCount() {
+        const el = document.querySelector('[data-fav-count]');
+        if (!el) return;
+        const n = getFavs().length;
+        el.textContent = String(n);
+        (el as HTMLElement).style.display = n ? '' : 'none';
+      }
+      function syncButtons() {
+        const favs = getFavs();
+        document.querySelectorAll<HTMLElement>('[data-fav]').forEach((btn) => {
+          const id = btn.dataset.fav!;
+          const on = favs.includes(id);
+          btn.classList.toggle('is-fav', on);
+          btn.setAttribute('aria-pressed', String(on));
+        });
+      }
+
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-fav]');
+        if (!btn) return;
+        e.preventDefault();
+        const id = btn.dataset.fav!;
+        const favs = getFavs();
+        setFavs(favs.includes(id) ? favs.filter((x) => x !== id) : [...favs, id]);
+        syncButtons();
+        updateCount();
+      });
+
+      syncButtons();
+      updateCount();
+
+      // ----- Abort hanging external favicon requests -----
+      // Some favicon hosts are slow/blocked, which keeps the document "loading"
+      // and the browser tab spinner running forever. Cancel any image that
+      // hasn't finished shortly after load and reveal the category fallback.
+      const cancelPendingFavicons = () => {
+        document.querySelectorAll<HTMLImageElement>('img.ws-favicon').forEach((img) => {
+          if (!img.complete || img.naturalWidth === 0) {
+            const fb = img.parentElement?.querySelector<HTMLElement>('.ws-favicon-fallback');
+            if (fb) fb.classList.remove('hidden');
+            img.remove();
+          }
+        });
+      };
+      window.addEventListener('load', () => setTimeout(cancelPendingFavicons, 1800));
+    </script>
+  </body>
+</html>

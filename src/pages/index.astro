@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ShortcutGrid from '../components/ShortcutGrid.astro';
+import ToolNetwork from '../components/ToolNetwork.astro';
+import ExploreCategories from '../components/ExploreCategories.astro';
+import FeaturedTools from '../components/FeaturedTools.astro';
+import GuideGrid from '../components/GuideGrid.astro';
+import { categories } from '../data/categories';
+import { websites } from '../data/websites';
+import { myTools } from '../data/ownSites';
+import { getCollection } from 'astro:content';
+
+const catCounts = categories.map((c) => ({
+  category: c,
+  count: websites.filter((w) => w.category === c.slug).length,
+}));
+
+const guides = (await getCollection('guides'))
+  .sort((a, b) => (b.data.pubDate?.getTime() ?? 0) - (a.data.pubDate?.getTime() ?? 0))
+  .slice(0, 4);
+---
+
+<BaseLayout title="51NAV — Your Internet Start Page">
+  <Hero />
+  <ShortcutGrid />
+  <ToolNetwork sites={myTools} />
+  <ExploreCategories items={catCounts} />
+  <FeaturedTools />
+  <GuideGrid guides={guides} />
+</BaseLayout>

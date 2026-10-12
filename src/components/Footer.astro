@@ -1,0 +1,123 @@
+---
+const year = new Date().getFullYear();
+const groups = [
+  {
+    title: 'Explore',
+    links: [
+      { label: 'Tools', href: '/tools' },
+      { label: 'Websites', href: '/websites' },
+      { label: 'Categories', href: '/categories' },
+      { label: 'Guides', href: '/guides' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Submit a site', href: '/contact' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms', href: '/terms' },
+    ],
+  },
+];
+
+const socials = [
+  {
+    label: 'GitHub',
+    href: 'https://github.com',
+    path: 'M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.94.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z',
+  },
+  {
+    label: 'X',
+    href: 'https://x.com',
+    path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z',
+  },
+  {
+    label: 'YouTube',
+    href: 'https://youtube.com',
+    path: 'M23 12s0-3.2-.41-4.73a2.5 2.5 0 0 0-1.77-1.77C19.3 5.1 12 5.1 12 5.1s-7.3 0-8.82.4a2.5 2.5 0 0 0-1.77 1.77C1 8.8 1 12 1 12s0 3.2.41 4.73a2.5 2.5 0 0 0 1.77 1.77c1.52.4 8.82.4 8.82.4s7.3 0 8.82-.4a2.5 2.5 0 0 0 1.77-1.77C23 15.2 23 12 23 12Zm-13 3.06V8.94L15.5 12 10 15.06Z',
+  },
+  {
+    label: 'RSS',
+    href: '/rss.xml',
+    path: 'M4 11a9 9 0 0 1 9 9h2.5A11.5 11.5 0 0 0 4 8.5V11Zm0 4a5 5 0 0 1 5 5h2.5A7.5 7.5 0 0 0 4 12.5V15Zm2 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
+  },
+];
+---
+
+<footer class="border-t border-white/10 bg-white/[0.02]">
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <div class="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div>
+        <div class="text-2xl font-bold text-white">
+          51<span class="text-brand-400">NAV</span>
+        </div>
+        <p class="mt-3 max-w-xs text-sm text-muted">
+          Your Internet Start Page. Useful Tools, Websites &amp; Resources — the unified entry point
+          for the 51NAV network.
+        </p>
+        <div class="mt-5 flex gap-2">
+          {
+            socials.map((s) => (
+              <a
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                class="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-muted transition hover:border-line-2 hover:bg-white/10 hover:text-ink"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                  <path d={s.path} />
+                </svg>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+
+      {
+        groups.map((g) => (
+          <div>
+            <h4 class="text-sm font-semibold text-white">{g.title}</h4>
+            <ul class="mt-3 space-y-2">
+              {g.links.map((l) => (
+                <li>
+                  <a href={l.href} class="text-sm text-muted transition hover:text-ink">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <div
+      class="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row"
+    >
+      <p>© {year} 51NAV. All trademarks are the property of their respective owners.</p>
+      <button
+        data-back-top
+        class="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-muted transition hover:border-line-2 hover:bg-white/5 hover:text-ink"
+      >
+        Back to top
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelector('[data-back-top]')?.addEventListener('click', () =>
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  );
+</script>

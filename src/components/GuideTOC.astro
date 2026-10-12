@@ -1,0 +1,82 @@
+---
+interface Heading {
+  slug: string;
+  text: string;
+  depth: number;
+}
+
+interface Props {
+  headings: Heading[];
+  class?: string;
+}
+
+const { headings, class: className = '' } = Astro.props;
+const toc = headings.filter((h) => h.depth <= 3);
+---
+
+{
+  toc.length > 0 ? (
+    <nav aria-label="Table of contents" class={className}>
+      <ol class="space-y-1.5 border-l border-line">
+        {(() => {
+          let h2Index = 0;
+          return toc.map((h) => {
+            if (h.depth === 2) h2Index++;
+            return (
+              <li
+                class={`toc-link ${h.depth === 3 ? 'ml-4' : ''}`}
+                data-slug={h.slug}
+              >
+                <a
+                  href={`#${h.slug}`}
+                  class="block border-l-2 border-transparent pl-3 text-sm text-muted transition hover:border-brand-400 hover:text-ink"
+                >
+                  {h.depth === 2 ? `${h2Index}. ` : ''}{h.text}
+                </a>
+              </li>
+            );
+          });
+        })()}
+      </ol>
+    </nav>
+  ) : (
+    <p class={`text-sm text-muted ${className}`}>No sections available.</p>
+  )
+}
+
+<script>
+  (() => {
+    const links = document.querySelectorAll<HTMLAnchorElement>('.toc-link a');
+    const items = document.querySelectorAll<HTMLElement>('.toc-link');
+    const headings = Array.from(links)
+      .map((a) => {
+        const id = a.getAttribute('href')?.replace('#', '');
+        return id ? document.getElementById(id) : null;
+      })
+      .filter(Boolean) as HTMLElement[];
+
+    if (headings.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          entry.target.classList.toggle('is-visible', entry.isIntersecting);
+        });
+        const visible = headings.filter((h) => h.classList.contains('is-visible'));
+        const active = visible.length > 0 ? visible[0] : headings[0];
+        const slug = active.id;
+        items.forEach((item) => {
+          const link = item.querySelector('a');
+          const isActive = item.dataset.slug === slug;
+          link?.classList.toggle('border-brand-400', isActive);
+          link?.classList.toggle('text-brand-400', isActive);
+          link?.classList.toggle('border-transparent', !isActive);
+          link?.classList.toggle('text-muted', !isActive);
+        });
+      },
+      { rootMargin: '-80px 0px -60% 0px', threshold: 0 }
+    );
+
+    headings.forEach((h) => observer.observe(h));
+  })();
+</script>

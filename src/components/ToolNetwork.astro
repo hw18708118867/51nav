@@ -1,0 +1,91 @@
+---
+import type { OwnSite } from '../lib/types';
+import Icon from './Icon.astro';
+
+interface Props {
+  sites: OwnSite[];
+}
+
+const { sites } = Astro.props;
+
+const tileClass: Record<string, string> = {
+  toolhub: 'bg-blue-500',
+  devtools: 'bg-cyan-500',
+  moneytools: 'bg-amber-500',
+  healthcalchub: 'bg-rose-500',
+  games: 'bg-violet-500',
+  toolbox: 'bg-emerald-500',
+};
+
+const arrowClass: Record<string, string> = {
+  toolhub: 'h-5 w-5 text-blue-400 transition group-hover:translate-x-0.5 group-hover:text-white',
+  devtools: 'h-5 w-5 text-cyan-400 transition group-hover:translate-x-0.5 group-hover:text-white',
+  moneytools: 'h-5 w-5 text-amber-400 transition group-hover:translate-x-0.5 group-hover:text-white',
+  healthcalchub: 'h-5 w-5 text-rose-400 transition group-hover:translate-x-0.5 group-hover:text-white',
+  games: 'h-5 w-5 text-violet-400 transition group-hover:translate-x-0.5 group-hover:text-white',
+  toolbox: 'h-5 w-5 text-emerald-400 transition group-hover:translate-x-0.5 group-hover:text-white',
+};
+
+const textGradientClass: Record<string, string> = {
+  toolhub: 'bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent',
+  devtools: 'bg-gradient-to-r from-cyan-300 to-cyan-500 bg-clip-text text-transparent',
+  moneytools: 'bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent',
+  healthcalchub: 'bg-gradient-to-r from-rose-300 to-rose-500 bg-clip-text text-transparent',
+  games: 'bg-gradient-to-r from-violet-300 to-violet-500 bg-clip-text text-transparent',
+  toolbox: 'bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent',
+};
+
+const underlineClass: Record<string, string> = {
+  toolhub: 'bg-gradient-to-r from-blue-300 to-blue-500',
+  devtools: 'bg-gradient-to-r from-cyan-300 to-cyan-500',
+  moneytools: 'bg-gradient-to-r from-amber-300 to-amber-500',
+  healthcalchub: 'bg-gradient-to-r from-rose-300 to-rose-500',
+  games: 'bg-gradient-to-r from-violet-300 to-violet-500',
+  toolbox: 'bg-gradient-to-r from-emerald-300 to-emerald-500',
+};
+---
+
+<section class="section">
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">
+        <Icon name="wrench" class="section-icon" /> 51NAV Tools
+      </h2>
+      <p class="section-sub">Powerful online tools from the 51NAV network.</p>
+    </div>
+    <a href="/tools" class="section-link">View All Tools →</a>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    {
+      sites.map((s, i) => {
+        const external = s.url.startsWith('http');
+        const iconTile = tileClass[s.id] ?? 'bg-slate-500';
+        const titleGradient = textGradientClass[s.id] ?? 'text-ink';
+        const underlineGradient = underlineClass[s.id] ?? 'bg-gradient-to-r from-slate-300 to-slate-500';
+        const tagsLine = (s.tags || []).slice(0, 4).join(' • ') || s.description;
+        return (
+          <a
+            href={s.url}
+            target={external ? '_blank' : '_self'}
+            rel={external ? 'noopener noreferrer' : undefined}
+            class={`group relative flex h-52 flex-col rounded-2xl p-4 transition ${i === 0 ? 'tile-primary' : 'tile-strong'}`}
+          >
+            <span class={`flex h-11 w-11 items-center justify-center rounded-xl ${iconTile}`}>
+              <Icon name={s.icon} class="h-7 w-7 text-white" />
+            </span>
+            <h3 class={`mt-3 inline-block font-bold ${titleGradient}`}>{s.name}</h3>
+            <p class={`relative inline-block text-xs font-medium ${titleGradient}`}>
+              {s.meta}
+              <span class={`absolute -bottom-1 left-0 h-0.5 w-full rounded-full ${underlineGradient}`}></span>
+            </p>
+            <p class="mt-2 line-clamp-2 text-xs text-muted">{tagsLine}</p>
+            <div class="mt-auto flex justify-end">
+              <Icon name="arrow-right" class={arrowClass[s.id] ?? 'h-5 w-5 text-slate-500 transition group-hover:translate-x-0.5'} />
+            </div>
+          </a>
+        );
+      })
+    }
+  </div>
+</section>

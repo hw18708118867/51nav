@@ -1,0 +1,32 @@
+<div class="flex items-center gap-2 text-right">
+  <span data-weather-icon class="inline-flex h-8 w-8 items-center justify-center text-amber-300">
+    <!-- default icon replaced by client -->
+    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 21.662A7.986 7.986 0 0 0 12 11a7.986 7.986 0 0 0-6.084 11.662"/><path d="M9 10a5 5 0 0 1 5-5 5 5 0 0 1 2 9.587"/></svg>
+  </span>
+  <div>
+    <p data-weather-temp class="text-lg font-semibold leading-none text-white">--°C</p>
+    <p data-weather-city class="mt-0.5 text-xs text-slate-400">Locating…</p>
+  </div>
+</div>
+
+<script>
+  import { getLocation } from '../lib/geo';
+  import { fetchWeather, weatherSvg } from '../lib/weather';
+
+  async function init() {
+    try {
+      const loc = await getLocation();
+      if (!loc.latitude && !loc.longitude) return;
+      const w = await fetchWeather(loc.latitude, loc.longitude);
+      const iconEl = document.querySelector('[data-weather-icon]');
+      const tempEl = document.querySelector('[data-weather-temp]');
+      const cityEl = document.querySelector('[data-weather-city]');
+      if (iconEl) iconEl.innerHTML = weatherSvg(w.icon);
+      if (tempEl) tempEl.textContent = `${Math.round(w.temp)}°C`;
+      if (cityEl) cityEl.textContent = loc.city;
+    } catch (err) {
+      console.error('Weather init failed', err);
+    }
+  }
+  init();
+</script>

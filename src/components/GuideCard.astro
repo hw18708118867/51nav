@@ -1,0 +1,58 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { toneSolid, toneIcon } from '../lib/tones';
+import { readingTime, guideIconTheme, difficultyTone } from '../lib/guides';
+import Icon from './Icon.astro';
+
+interface Props {
+  guide: CollectionEntry<'guides'>;
+}
+
+const { guide } = Astro.props;
+const rt = readingTime(guide.body);
+const { icon, tone } = guideIconTheme(guide.data.title, guide.data.tags);
+const iconBg = toneSolid[tone];
+const diffTone = toneIcon[difficultyTone[guide.data.difficulty]];
+---
+
+<a
+  href={`/guides/${guide.id}`}
+  class="group tile card-hover flex h-full flex-col p-5 transition"
+  aria-label={`Read ${guide.data.title}`}
+  data-title={guide.data.title}
+  data-description={guide.data.description}
+  data-category={guide.data.category}
+  data-difficulty={guide.data.difficulty}
+  data-tags={guide.data.tags.join(' ')}
+>
+  <div class="flex items-start gap-4">
+    <span
+      class={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white ${iconBg}`}
+    >
+      <Icon name={icon} class="h-7 w-7" />
+    </span>
+    <h3 class="min-w-0 flex-1 text-lg font-semibold text-ink line-clamp-2">
+      {guide.data.title}
+    </h3>
+  </div>
+
+  <p class="mt-3 line-clamp-2 text-sm leading-relaxed text-muted">
+    {guide.data.description}
+  </p>
+
+  <div class="mt-auto flex items-center justify-between gap-3 pt-4">
+    <div class="flex flex-wrap items-center gap-3 text-sm text-muted">
+      <span class="flex items-center gap-1">
+        <Icon name="clock" class="h-3.5 w-3.5" />
+        {rt} min
+      </span>
+      <span class={`rounded-full px-2 py-0.5 text-xs font-medium ${diffTone}`}>
+        {guide.data.difficulty}
+      </span>
+    </div>
+    <Icon
+      name="arrow-right"
+      class="h-4 w-4 shrink-0 text-brand-400 transition group-hover:translate-x-0.5"
+    />
+  </div>
+</a>

@@ -1,0 +1,14 @@
+---
+import type { ToolItem } from '../lib/types';
+import ToolCard from './ToolCard.astro';
+
+interface Props {
+  tools: ToolItem[];
+}
+
+const { tools } = Astro.props;
+---
+
+<div id="tools-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" data-page-size="12">
+  {tools.map((t) => <ToolCard tool={t} />)}
+</div>

@@ -1,0 +1,219 @@
+---
+import BaseLayout from '../../components/BaseLayout.astro';
+import GuideCard from '../../components/GuideCard.astro';
+import GuidesHeroArt from '../../components/GuidesHeroArt.astro';
+import Icon from '../../components/Icon.astro';
+import { getCollection } from 'astro:content';
+import { sortGuides } from '../../lib/guides';
+
+const allGuides = await getCollection('guides');
+const guides = sortGuides(allGuides, 'recent');
+const difficulties = ['All', 'Beginner', 'Intermediate', 'Advanced'];
+const sortOptions = [
+  { value: 'recent', label: 'Most Recent' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'az', label: 'A-Z' },
+];
+---
+
+<BaseLayout
+  title="Guides — 51NAV"
+  description="Practical how-tos and explainers to help you understand and use developer tools: JSON, JWT, Base64 and more."
+>
+  <!-- Hero -->
+  <section class="container-page pt-12 pb-8 md:pt-16 md:pb-10">
+    <div class="grid gap-8 lg:grid-cols-2 lg:items-start">
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-brand-400">Guides</div>
+        <h1 class="mt-2 text-4xl font-bold text-ink md:text-5xl">Developer Guides</h1>
+        <p class="mt-3 max-w-2xl text-lg text-muted">
+          Practical how-tos and explainers to help you understand and use developer tools.
+        </p>
+
+        <!-- Search -->
+        <div
+          id="guides-search-bar"
+          class="mt-6 flex h-[50px] max-w-2xl items-center gap-3 rounded-xl border border-slate-700/40 bg-[#0d1420] px-3 transition"
+        >
+          <Icon name="search" class="h-5 w-5 text-faint" />
+          <input
+            id="guides-search"
+            type="text"
+            placeholder="Search guides..."
+            class="flex-1 bg-transparent pl-2 text-sm text-ink placeholder:text-faint outline-none"
+            autocomplete="off"
+          />
+          <kbd
+            class="hidden items-center gap-1 rounded-md border border-line bg-surface px-1.5 py-0.5 text-[11px] font-medium text-muted sm:inline-flex"
+          >
+            <Icon name="command" class="h-3 w-3" />K
+          </kbd>
+        </div>
+      </div>
+
+      <GuidesHeroArt />
+    </div>
+  </section>
+
+  <!-- Directory -->
+  <section class="container-page pb-16 md:pb-20">
+    <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div class="flex flex-wrap items-center gap-2" id="guides-filters">
+        {
+          difficulties.map((d, i) => (
+            <button
+              type="button"
+              data-difficulty={d}
+              class={`filter-tab rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                i === 0
+                  ? 'active bg-brand-500/10 text-brand-400'
+                  : 'text-muted hover:bg-surface-2 hover:text-ink'
+              }`}
+            >
+              {d}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label for="guides-sort" class="text-sm text-muted">Sort by</label>
+        <div class="relative">
+          <select
+            id="guides-sort"
+            class="h-9 appearance-none rounded-lg border border-line bg-surface pl-3 pr-8 text-sm text-ink outline-none focus:border-brand-400"
+          >
+            {sortOptions.map((opt) => (
+              <option value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <Icon
+            name="chevron-down"
+            class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-4 flex items-center gap-2">
+      <h2 class="text-xl font-bold text-ink">All Guides</h2>
+      <span
+        id="guides-count"
+        class="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-muted"
+      >
+        {guides.length}
+      </span>
+    </div>
+
+    <div
+      id="guides-grid"
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+    >
+      {
+        guides.map((g) => (
+          <div
+            class="guide-item"
+            data-title={g.data.title}
+            data-description={g.data.description}
+            data-difficulty={g.data.difficulty}
+            data-tags={g.data.tags.join(' ')}
+            data-date={g.data.pubDate?.getTime() ?? 0}
+            data-title-sort={g.data.title.toLowerCase()}
+          >
+            <GuideCard guide={g} />
+          </div>
+        ))
+      }
+    </div>
+
+    <p id="guides-empty" class="mt-8 hidden text-sm text-muted">
+      No guides match your search. Try a different keyword or filter.
+    </p>
+  </section>
+
+  <script>
+    (() => {
+      const search = document.getElementById('guides-search') as HTMLInputElement | null;
+      const filterButtons = document.querySelectorAll<HTMLElement>('#guides-filters [data-difficulty]');
+      const sort = document.getElementById('guides-sort') as HTMLSelectElement | null;
+      const grid = document.getElementById('guides-grid');
+      const countEl = document.getElementById('guides-count');
+      const emptyEl = document.getElementById('guides-empty');
+      const items = grid ? Array.from(grid.querySelectorAll<HTMLElement>('.guide-item')) : [];
+
+      let activeDifficulty = 'All';
+
+      function normalize(s: string) {
+        return s.trim().toLowerCase();
+      }
+
+      function filter() {
+        const q = normalize(search?.value ?? '');
+        let visible = 0;
+
+        items.forEach((item) => {
+          const title = normalize(item.dataset.title ?? '');
+          const description = normalize(item.dataset.description ?? '');
+          const tags = normalize(item.dataset.tags ?? '');
+          const difficulty = item.dataset.difficulty ?? '';
+          const matchesSearch =
+            !q || title.includes(q) || description.includes(q) || tags.includes(q);
+          const matchesDifficulty = activeDifficulty === 'All' || difficulty === activeDifficulty;
+          const show = matchesSearch && matchesDifficulty;
+          item.classList.toggle('hidden', !show);
+          if (show) visible++;
+        });
+
+        if (countEl) countEl.textContent = String(visible);
+        if (emptyEl) emptyEl.classList.toggle('hidden', visible > 0);
+      }
+
+      function sortItems() {
+        const mode = sort?.value ?? 'recent';
+        const sorted = [...items].sort((a, b) => {
+          if (mode === 'recent') {
+            return Number(b.dataset.date) - Number(a.dataset.date);
+          }
+          if (mode === 'oldest') {
+            return Number(a.dataset.date) - Number(b.dataset.date);
+          }
+          return (a.dataset.titleSort ?? '').localeCompare(b.dataset.titleSort ?? '');
+        });
+        sorted.forEach((item) => grid?.appendChild(item));
+      }
+
+      filterButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeDifficulty = btn.dataset.difficulty ?? 'All';
+          filterButtons.forEach((b) => {
+            const isActive = b === btn;
+            b.classList.toggle('active', isActive);
+            b.classList.toggle('bg-brand-500/10', isActive);
+            b.classList.toggle('text-brand-400', isActive);
+            b.classList.toggle('text-muted', !isActive);
+            b.classList.toggle('hover:bg-surface-2', !isActive);
+            b.classList.toggle('hover:text-ink', !isActive);
+          });
+          filter();
+        });
+      });
+
+      search?.addEventListener('input', filter);
+      sort?.addEventListener('change', () => {
+        sortItems();
+        filter();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          const palette = document.getElementById('search-modal');
+          if (palette && !palette.classList.contains('hidden')) return;
+          search?.focus();
+        }
+      });
+
+      filter();
+    })();
+  </script>
+</BaseLayout>

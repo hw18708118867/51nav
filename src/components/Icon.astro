@@ -1,0 +1,55 @@
+---
+import { Icon as AstroIcon } from 'astro-icon/components';
+import { icon as inlineIcon } from '../lib/icons';
+
+interface Props {
+  name: string;
+  class?: string;
+}
+
+const { name, class: className } = Astro.props;
+
+// Map our short names to Iconify icons for generic / category / featured glyphs.
+const ICONIFY: Record<string, string> = {
+  'arrow-right': 'lucide:arrow-right',
+  command: 'lucide:command',
+  'partly-cloudy': 'lucide:cloud-sun',
+  search: 'lucide:search',
+  // categories
+  ai: 'lucide:brain-circuit',
+  developer: 'lucide:code-2',
+  productivity: 'lucide:list-checks',
+  design: 'lucide:pen-tool',
+  cloud: 'lucide:cloud',
+  learning: 'lucide:book-open',
+  business: 'lucide:building-2',
+  finance: 'lucide:bar-chart-2',
+  social: 'lucide:users',
+  media: 'lucide:play',
+  shopping: 'lucide:shopping-bag',
+  travel: 'lucide:plane',
+  health: 'lucide:heart',
+  entertainment: 'lucide:clapperboard',
+  'games-cat': 'lucide:gamepad-2',
+  // shortcut icon picker
+  auto: 'lucide:sparkles',
+  // featured tools
+  'json-formatter': 'lucide:braces',
+  'json-validator': 'lucide:check-check',
+  base64: 'lucide:binary',
+  jwt: 'lucide:key-round',
+  url: 'lucide:link',
+  timestamp: 'lucide:clock',
+};
+
+const inline = inlineIcon(name);
+const iconifyName = ICONIFY[name] ?? (name.includes(':') ? name : `lucide:${name}`);
+---
+
+{
+  inline ? (
+    <span class={className} set:html={inline} />
+  ) : (
+    <AstroIcon name={iconifyName} class={className} />
+  )
+}

@@ -1,0 +1,48 @@
+---
+import { featuredTools } from '../data/featuredTools';
+import Icon from './Icon.astro';
+
+const tileClass: Record<string, string> = {
+  blue: 'bg-blue-500',
+  emerald: 'bg-emerald-500',
+  violet: 'bg-violet-500',
+  rose: 'bg-rose-500',
+  amber: 'bg-amber-500',
+  cyan: 'bg-cyan-500',
+  sky: 'bg-sky-500',
+  green: 'bg-green-500',
+};
+---
+
+<section class="section">
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">
+        <Icon name="star" class="section-icon" /> Featured Online Tools
+      </h2>
+      <p class="section-sub">Most popular and useful tools for everyone.</p>
+    </div>
+    <a href="/tools" class="section-link">View All Tools →</a>
+  </div>
+
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    {
+      featuredTools.map((t) => (
+        <a
+          href={t.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="group tile-soft flex items-center gap-3 rounded-2xl p-3"
+        >
+          <span class={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${tileClass[t.color]}`}>
+            <Icon name={t.icon} class="h-5 w-5 text-white" />
+          </span>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-sm font-medium text-ink">{t.name}</h3>
+            <p class="line-clamp-1 text-xs text-faint">{t.description}</p>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+</section>
