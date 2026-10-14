@@ -22,6 +22,30 @@ const typeLabel = getWebsiteTypeLabel(site.category);
 const title = `${site.name} — ${cat?.name ?? 'Website'} | 51NAV`;
 const displayHostname = new URL(site.url).hostname.replace(/^www\./, '');
 
+const siteUrl = new URL(`/websites/${site.id}/`, Astro.site).toString();
+const breadcrumbItems = [
+  { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).toString() },
+  { '@type': 'ListItem', position: 2, name: 'Websites', item: new URL('/websites/', Astro.site).toString() },
+  cat && {
+    '@type': 'ListItem',
+    position: 3,
+    name: cat.name,
+    item: new URL(`/websites/?category=${cat.slug}`, Astro.site).toString(),
+  },
+  {
+    '@type': 'ListItem',
+    position: cat ? 4 : 3,
+    name: site.name,
+    item: siteUrl,
+  },
+].filter(Boolean) as Record<string, unknown>[];
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbItems,
+};
+
 const rating = site.rating;
 const ratingCount = site.ratingCount;
 
@@ -470,4 +494,9 @@ const FEATURE_ICONS = ['check', 'zap', 'star', 'shield-check', 'sparkles', 'laye
       sections.forEach((s) => observer.observe(s));
     })();
   </script>
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(breadcrumbJsonLd)}
+  />
 </BaseLayout>

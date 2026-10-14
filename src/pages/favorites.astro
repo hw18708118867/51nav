@@ -1,20 +1,14 @@
 ---
 import BaseLayout from '../components/BaseLayout.astro';
 import ShortcutGrid from '../components/ShortcutGrid.astro';
+import WebsiteCard from '../components/WebsiteCard.astro';
 import { websites } from '../data/websites';
-
-const map = websites.map((w) => ({
-  id: w.id,
-  name: w.name,
-  url: w.url,
-  description: w.description,
-  category: w.category,
-}));
 ---
 
 <BaseLayout
   title="My Shortcuts & Favorites — 51NAV"
   description="Your personal shortcuts and saved websites. Stored locally in your browser."
+  noindex
 >
   <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6">
     <h1 class="text-3xl font-bold text-white">My Favorites</h1>
@@ -35,17 +29,22 @@ const map = websites.map((w) => ({
       You haven't saved any sites yet. Click the heart on any site card to save it here.
     </p>
 
+    <!-- All cards are rendered to match the websites list exactly; only the
+         favorited ones are shown (toggled by data-fav-card visibility). -->
     <div
       id="fav-grid"
       class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
     >
+      {websites.map((w) => (
+        <div data-fav-card={w.id} class="hidden">
+          <WebsiteCard website={w} />
+        </div>
+      ))}
     </div>
   </section>
 
-  <script is:inline define:vars={{ SITES: map }}>
-    const sites = SITES;
+  <script is:inline>
     const KEY = '51nav:favorites';
-
     const getFavs = () => {
       try {
         return JSON.parse(localStorage.getItem(KEY) || '[]');
@@ -54,41 +53,24 @@ const map = websites.map((w) => ({
       }
     };
 
-    function render() {
+    const grid = document.getElementById('fav-grid');
+    const empty = document.getElementById('fav-empty');
+
+    function sync() {
       const favs = getFavs();
-      const grid = document.getElementById('fav-grid');
-      const empty = document.getElementById('fav-empty');
       if (!grid || !empty) return;
-      if (!favs.length) {
-        grid.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
-      empty.classList.add('hidden');
-      grid.innerHTML = favs
-        .map((id) => {
-          const s = sites.find((x) => x.id === id);
-          if (!s) return '';
-          return `
-          <article class="relative flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <button data-fav="${s.id}" aria-pressed="true"
-              class="is-fav absolute right-3 top-3 rounded-full p-1.5 text-brand-400"
-              aria-label="Remove ${s.name}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 21s-7.5-4.6-10-9.2C.4 8.3 2 4.5 5.5 4.5c2 0 3.4 1.2 4.5 2.7C11.1 5.7 12.5 4.5 14.5 4.5 18 4.5 19.6 8.3 22 11.8 19.5 16.4 12 21 12 21Z" />
-              </svg>
-            </button>
-            <a href="${s.url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-white">${s.name}</a>
-            <p class="mt-1 line-clamp-2 text-sm text-slate-400">${s.description}</p>
-          </article>`;
-        })
-        .join('');
+      empty.classList.toggle('hidden', favs.length > 0);
+      grid.querySelectorAll('[data-fav-card]').forEach((el) => {
+        const id = el.getAttribute('data-fav-card');
+        el.classList.toggle('hidden', !favs.includes(id));
+      });
     }
 
-    render();
-    window.addEventListener('storage', render);
+    sync();
+    window.addEventListener('storage', sync);
+    // BaseLayout's global handler updates localStorage + .is-fav; re-sync here.
     document.addEventListener('click', (e) => {
-      if ((e.target).closest('[data-fav]')) setTimeout(render, 0);
+      if (e.target.closest('[data-fav]')) setTimeout(sync, 0);
     });
   </script>
 </BaseLayout>

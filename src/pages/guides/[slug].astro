@@ -56,6 +56,35 @@ const faqJsonLd =
         })),
       }
     : null;
+
+const guideUrl = new URL(`/guides/${guide.id}/`, Astro.site).toString();
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: guide.data.title,
+  description: guide.data.description,
+  mainEntityOfPage: guideUrl,
+  url: guideUrl,
+  datePublished: guide.data.pubDate?.toISOString(),
+  dateModified: guide.data.pubDate?.toISOString(),
+  inLanguage: 'en',
+  author: { '@type': 'Organization', name: '51NAV', url: Astro.site?.toString() },
+  publisher: {
+    '@type': 'Organization',
+    name: '51NAV',
+    url: Astro.site?.toString(),
+  },
+};
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).toString() },
+    { '@type': 'ListItem', position: 2, name: 'Guides', item: new URL('/guides/', Astro.site).toString() },
+    { '@type': 'ListItem', position: 3, name: guide.data.title, item: guideUrl },
+  ],
+};
 ---
 
 <BaseLayout
@@ -471,4 +500,12 @@ const faqJsonLd =
       />
     )
   }
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(articleJsonLd)}
+  />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(breadcrumbJsonLd)}
+  />
 </BaseLayout>

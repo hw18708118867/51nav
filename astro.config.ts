@@ -8,7 +8,13 @@ import icon from 'astro-icon';
 export default defineConfig({
   site: 'https://www.51nav.com',
   base: '/',
-  integrations: [sitemap(), icon()],
+  integrations: [
+    sitemap({
+      // Client-only / non-content endpoints should not be submitted to Google.
+      filter: (page) => !page.includes('/favorites'),
+    }),
+    icon(),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

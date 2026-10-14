@@ -10,6 +10,9 @@
 /* Enable the `.dark` class hook (V2 is dark-only; class is always present). */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Favorited state — toggled by BaseLayout's favorites script via `.is-fav`. */
+@custom-variant is-fav (&:where(.is-fav, .is-fav *));
+
 @theme {
   /* ---- Brand accent (blue, used sparingly) ---- */
   --color-brand-50: #eff6ff;

@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
+Disallow: /search-index.json
+Disallow: /favorites/
+
 Sitemap: https://www.51nav.com/sitemap-index.xml

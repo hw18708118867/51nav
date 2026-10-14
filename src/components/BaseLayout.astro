@@ -9,16 +9,21 @@ interface Props {
   title: string;
   description?: string;
   type?: 'website' | 'article';
+  noindex?: boolean;
+  ogImage?: string;
 }
 
 const {
   title,
   description = '51NAV — Your Internet Start Page. Useful Tools, Websites & Resources.',
   type = 'website',
+  noindex = false,
+  ogImage,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const siteName = '51NAV';
+const ogImageUrl = new URL(ogImage ?? '/og-default.png', Astro.site).toString();
 
 // Analytics / verification are injected from GitHub Actions secrets (PUBLIC_ vars).
 // Leave them empty in local/dev builds — the tags are simply skipped.
@@ -41,6 +46,14 @@ const gscCode = import.meta.env.PUBLIC_GSC_VERIFICATION;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:alt" content={`${title} — 51NAV`} />
+    {
+      noindex && (
+        <meta name="robots" content="noindex, nofollow" />
+      )
+    }
 
     <!-- Google Search Console verification (set PUBLIC_GSC_VERIFICATION in CI) -->
     {
@@ -76,11 +89,16 @@ gtag('config', '${ga4Id}');`}
         '@type': 'WebSite',
         name: siteName,
         url: Astro.site?.toString(),
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: `${Astro.site}search?q={search_term_string}`,
-          'query-input': 'required name=search_term_string',
-        },
+      })}
+    />
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: siteName,
+        url: Astro.site?.toString(),
+        logo: ogImageUrl,
       })}
     />
   </head>
