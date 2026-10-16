@@ -47,7 +47,7 @@ powerful — once you learn its syntax you can reformat, filter, and reshape JSO
 
 ## Option 3: An online formatter
 
-Paste your JSON and get a clean, indented result instantly, with no install required. On 51NAV the
+Paste your JSON and get a clean, indented result instantly, with no install required — the [JSON Formatter](https://toolhub.51nav.com/tools/json-formatter/) does this in your browser. On 51NAV the
 formatter runs in your browser, so the data you paste is not uploaded anywhere. For sensitive payloads
 that distinction matters.
 
@@ -91,4 +91,4 @@ of anyone's afternoon.
 ## Where to go next
 
 - Understand the format itself in [What Is JSON?](/guides/what-is-json).
-- Validate and format JSON instantly with the [online JSON formatter](/tools).
+- Format and validate JSON instantly with the [JSON Formatter](https://toolhub.51nav.com/tools/json-formatter/). There is also a [JSON Formatter on DevTools](https://devtools.51nav.com/json/formatter/) and a [JSON Formatter on Toolbox](https://toolbox.51nav.com/tools/data-format/json-format/).

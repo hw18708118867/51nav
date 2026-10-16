@@ -10,7 +10,7 @@ interface Props {
 
 const { guide } = Astro.props;
 const rt = readingTime(guide.body);
-const { icon, tone } = guideIconTheme(guide.data.title, guide.data.tags);
+const { icon, tone } = guideIconTheme(guide.data.title, guide.data.tags, guide.id);
 const iconBg = toneSolid[tone];
 const diffTone = toneIcon[difficultyTone[guide.data.difficulty]];
 ---

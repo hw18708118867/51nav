@@ -61,7 +61,7 @@ pretty-prints the JSON so it is readable. Drop the `jq` part if you just want th
 
 ## Decode with a GUI tool
 
-For a one-off look, a JWT decoder in your browser is the fastest path — paste, and the claims appear
+For a one-off look, a [JWT decoder](https://toolhub.51nav.com/tools/jwt-decoder/) in your browser is the fastest path — paste, and the claims appear
 instantly. The catch is trust: a decoder may send your token to its own backend unless it runs entirely
 in the page. For anything sensitive, such as a real session token, prefer a local or offline decoder so
 the token never leaves your machine.
@@ -99,3 +99,9 @@ and must happen on the server. Do not conflate them — a token that decodes bea
 forgery.
 
 > Decoding proves nothing about authenticity. Only signature verification does.
+
+## Next steps
+
+- Decode and inspect a token with the [JWT Decoder](https://toolhub.51nav.com/tools/jwt-decoder/). There is also a [JWT tool on DevTools](https://devtools.51nav.com/jwt/decoder/) and a [JWT tool on Toolbox](https://toolbox.51nav.com/tools/security/jwt/).
+- Understand the encoding underneath in [What Is Base64?](/guides/what-is-base64).
+- Learn what a JWT is in [What Is a JWT?](/guides/what-is-jwt).

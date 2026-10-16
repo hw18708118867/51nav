@@ -100,9 +100,9 @@ the input is untrusted.
 
 You do not have to catch the mistakes above by hand. A validator flags them before they reach
 production, and a formatter turns a one-line mess into something you can actually read. Both are one
-click away on 51NAV.
+click away on 51NAV — the [JSON Formatter](https://toolhub.51nav.com/tools/json-formatter/) does both in the browser.
 
 ## Where to go next
 
-- Format and validate JSON instantly with an [online JSON formatter](/tools).
+- Format and validate JSON instantly with the [JSON Formatter](https://toolhub.51nav.com/tools/json-formatter/). There is also a [JSON Formatter on DevTools](https://devtools.51nav.com/json/formatter/) and a [JSON Formatter on Toolbox](https://toolbox.51nav.com/tools/data-format/json-format/).
 - Get practical tips in the [JSON Formatter Guide](/guides/json-formatter-guide).

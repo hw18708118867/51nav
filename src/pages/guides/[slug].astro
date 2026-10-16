@@ -23,7 +23,7 @@ export async function getStaticPaths() {
 const { guide } = Astro.props;
 const { Content, headings } = await render(guide);
 const rt = readingTime(guide.body);
-const { icon, tone } = guideIconTheme(guide.data.title, guide.data.tags);
+const { icon, tone } = guideIconTheme(guide.data.title, guide.data.tags, guide.id);
 const iconBg = toneSolid[tone];
 
 const allGuides = await getCollection('guides');
@@ -424,7 +424,7 @@ const breadcrumbJsonLd = {
   <script>
     // Code copy buttons
     (() => {
-      document.querySelectorAll('.guide-content pre').forEach((pre) => {
+      document.querySelectorAll<HTMLElement>('.guide-content pre').forEach((pre) => {
         const wrapper = document.createElement('div');
         wrapper.className =
           'relative my-5 overflow-hidden rounded-xl border border-line bg-[#0b111b]';

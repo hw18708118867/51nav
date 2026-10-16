@@ -37,7 +37,7 @@ header.payload.signature
 - **Payload** — the claims: who the user is, when the token expires, what they are allowed to do.
 - **Signature** — a cryptographic proof that the first two parts have not been altered.
 
-You can decode the header and payload with any JWT decoder to read them, because they are just encoded
+You can decode the header and payload with a [JWT Decoder](https://toolhub.51nav.com/tools/jwt-decoder/) to read them, because they are just encoded
 JSON — not encrypted.
 
 ## Example payload
@@ -100,3 +100,4 @@ it is *valid* — only signature verification answers that.
 
 - Learn the safe way to look inside tokens in [How to Decode a JWT](/guides/how-to-decode-jwt).
 - Understand the encoding underneath in [What Is Base64?](/guides/what-is-base64).
+- Decode and inspect a token with the [JWT Decoder](https://toolhub.51nav.com/tools/jwt-decoder/). There is also a [JWT tool on DevTools](https://devtools.51nav.com/jwt/decoder/) and a [JWT tool on Toolbox](https://toolbox.51nav.com/tools/security/jwt/).

@@ -1,4 +1,5 @@
 import type { CollectionEntry } from 'astro:content';
+import type { Tone } from './tones';
 
 export const difficultyTone: Record<string, string> = {
   Beginner: 'emerald',
@@ -12,7 +13,7 @@ export const categoryTone: Record<string, string> = {
   default: 'violet',
 };
 
-export function readingTime(body: string): number {
+export function readingTime(body: string | undefined): number {
   const source = (body || '').replace(/^---[\s\S]*?---/, '');
 
   // Prose: strip code blocks and markdown punctuation, keep link text.
@@ -34,18 +35,90 @@ export function readingTime(body: string): number {
   return Math.max(1, Math.ceil(proseWords / 200 + codeLines * 0.15));
 }
 
-export function guideIconTheme(title: string, tags: string[] = []) {
+// Per-guide icon + accent tone, chosen to reflect each article's topic.
+// Keyed by the guide id (the markdown filename without extension) so the
+// association is explicit and content-driven rather than guessed from keywords.
+export const GUIDE_ICONS: Record<string, { icon: string; tone: Tone }> = {
+  'what-is-json': { icon: 'braces', tone: 'blue' },
+  'json-formatter-guide': { icon: 'braces', tone: 'blue' },
+  'what-is-jwt': { icon: 'shield', tone: 'rose' },
+  'how-to-decode-jwt': { icon: 'key-round', tone: 'rose' },
+  'what-is-base64': { icon: 'binary', tone: 'emerald' },
+  'how-to-encode-base64': { icon: 'binary', tone: 'emerald' },
+  'how-to-generate-a-strong-password': { icon: 'lock', tone: 'amber' },
+  'what-is-a-hash': { icon: 'hash', tone: 'orange' },
+  'what-is-a-qr-code': { icon: 'qr-code', tone: 'sky' },
+  'what-is-a-uuid': { icon: 'fingerprint', tone: 'cyan' },
+  'what-is-unix-timestamp': { icon: 'clock', tone: 'green' },
+  'what-is-url-encoding': { icon: 'link', tone: 'yellow' },
+  'what-is-utf8': { icon: 'languages', tone: 'slate' },
+};
+
+// Gradient + snippet text colour for the homepage GuideGrid cards, keyed by tone
+// so the two guide listings stay visually consistent. Class strings are kept
+// literal so Tailwind v4 can statically detect them.
+export const GUIDE_GRADIENT: Record<string, string> = {
+  blue: 'from-blue-600/25 via-slate-900/80 to-slate-950',
+  indigo: 'from-indigo-600/25 via-slate-900/80 to-slate-950',
+  violet: 'from-violet-600/25 via-slate-900/80 to-slate-950',
+  purple: 'from-purple-600/25 via-slate-900/80 to-slate-950',
+  fuchsia: 'from-fuchsia-600/25 via-slate-900/80 to-slate-950',
+  pink: 'from-pink-600/25 via-slate-900/80 to-slate-950',
+  rose: 'from-rose-600/25 via-slate-900/80 to-slate-950',
+  red: 'from-red-600/25 via-slate-900/80 to-slate-950',
+  orange: 'from-orange-600/25 via-slate-900/80 to-slate-950',
+  amber: 'from-amber-600/25 via-slate-900/80 to-slate-950',
+  yellow: 'from-yellow-600/25 via-slate-900/80 to-slate-950',
+  green: 'from-green-600/25 via-slate-900/80 to-slate-950',
+  emerald: 'from-emerald-600/25 via-slate-900/80 to-slate-950',
+  teal: 'from-teal-600/25 via-slate-900/80 to-slate-950',
+  cyan: 'from-cyan-600/25 via-slate-900/80 to-slate-950',
+  sky: 'from-sky-600/25 via-slate-900/80 to-slate-950',
+  lime: 'from-lime-600/25 via-slate-900/80 to-slate-950',
+  slate: 'from-slate-600/25 via-slate-900/80 to-slate-950',
+};
+
+export const GUIDE_SNIPPET: Record<string, string> = {
+  blue: 'text-blue-200/80',
+  indigo: 'text-indigo-200/80',
+  violet: 'text-violet-200/80',
+  purple: 'text-purple-200/80',
+  fuchsia: 'text-fuchsia-200/80',
+  pink: 'text-pink-200/80',
+  rose: 'text-rose-200/80',
+  red: 'text-red-200/80',
+  orange: 'text-orange-200/80',
+  amber: 'text-amber-200/80',
+  yellow: 'text-yellow-200/80',
+  green: 'text-green-200/80',
+  emerald: 'text-emerald-200/80',
+  teal: 'text-teal-200/80',
+  cyan: 'text-cyan-200/80',
+  sky: 'text-sky-200/80',
+  lime: 'text-lime-200/80',
+  slate: 'text-slate-200/80',
+};
+
+export function guideIconTheme(
+  title: string,
+  tags: string[] = [],
+  id?: string
+): { icon: string; tone: Tone } {
+  if (id && GUIDE_ICONS[id]) {
+    return GUIDE_ICONS[id];
+  }
+  // Fallback keyword matching for any guide not present in GUIDE_ICONS above.
   const t = (title + ' ' + (tags?.join(' ') ?? '')).toLowerCase();
-  if (t.includes('json')) return { icon: 'braces', tone: 'blue' as const };
-  if (t.includes('jwt')) return { icon: 'shield', tone: 'rose' as const };
-  if (t.includes('base64')) return { icon: 'binary', tone: 'emerald' as const };
-  if (t.includes('git') || t.includes('github')) return { icon: 'git-branch', tone: 'orange' as const };
-  if (t.includes('python')) return { icon: 'terminal', tone: 'yellow' as const };
-  if (t.includes('docker')) return { icon: 'container', tone: 'sky' as const };
-  if (t.includes('react')) return { icon: 'atom', tone: 'cyan' as const };
-  if (t.includes('node')) return { icon: 'server', tone: 'green' as const };
-  if (t.includes('linux')) return { icon: 'terminal', tone: 'slate' as const };
-  return { icon: 'file-code', tone: 'violet' as const };
+  if (t.includes('json')) return { icon: 'braces', tone: 'blue' } as const;
+  if (t.includes('jwt')) return { icon: 'shield', tone: 'rose' } as const;
+  if (t.includes('base64')) return { icon: 'binary', tone: 'emerald' } as const;
+  if (t.includes('git') || t.includes('github')) return { icon: 'git-branch', tone: 'orange' } as const;
+  if (t.includes('python')) return { icon: 'terminal', tone: 'yellow' } as const;
+  if (t.includes('docker')) return { icon: 'container', tone: 'sky' } as const;
+  if (t.includes('react')) return { icon: 'atom', tone: 'cyan' } as const;
+  if (t.includes('node')) return { icon: 'server', tone: 'green' } as const;
+  if (t.includes('linux')) return { icon: 'terminal', tone: 'slate' } as const;
+  return { icon: 'file-code', tone: 'violet' } as const;
 }
 
 export function sortGuides(

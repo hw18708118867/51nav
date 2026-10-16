@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { toneIcon } from '../lib/tones';
-import { readingTime } from '../lib/guides';
+import { readingTime, GUIDE_ICONS, GUIDE_GRADIENT, GUIDE_SNIPPET } from '../lib/guides';
 import Icon from './Icon.astro';
 
 interface Props {
@@ -23,24 +23,18 @@ interface PreviewTheme {
 }
 
 function guideTheme(g: CollectionEntry<'guides'>): PreviewTheme {
-  const t = (g.data.title + ' ' + (g.data.tags?.join(' ') ?? '')).toLowerCase();
-  if (t.includes('json')) {
-    return { gradient: 'from-blue-600/25 via-slate-900/80 to-slate-950', icon: 'braces', snippetClass: 'text-blue-200/80' };
-  }
-  if (t.includes('jwt')) {
-    return { gradient: 'from-rose-600/25 via-slate-900/80 to-slate-950', icon: 'shield', snippetClass: 'text-rose-200/80' };
-  }
-  if (t.includes('base64')) {
-    return { gradient: 'from-emerald-600/25 via-slate-900/80 to-slate-950', icon: 'binary', snippetClass: 'text-emerald-200/80' };
-  }
-  if (t.includes('tool') || t.includes('developer')) {
-    return { gradient: 'from-violet-600/25 via-slate-900/80 to-slate-950', icon: 'wrench', snippetClass: 'text-violet-200/80' };
-  }
-  return { gradient: 'from-brand-600/25 via-slate-900/80 to-slate-950', icon: 'file-code', snippetClass: 'text-slate-200/80' };
+  const mapped = GUIDE_ICONS[g.id];
+  const tone = mapped?.tone ?? toneByCat[g.data.category] ?? 'violet';
+  return {
+    gradient: GUIDE_GRADIENT[tone] ?? GUIDE_GRADIENT.violet,
+    icon: mapped?.icon ?? 'file-code',
+    snippetClass: GUIDE_SNIPPET[tone] ?? GUIDE_SNIPPET.violet,
+  };
 }
 
-function previewSnippet(body: string): string {
-  const code = body.match(/```[\w]*\n([\s\S]*?)\n```/);
+function previewSnippet(body: string | undefined): string {
+  const text = body ?? '';
+  const code = text.match(/```[\w]*\n([\s\S]*?)\n```/);
   if (code) {
     return code[1]
       .split('\n')
@@ -48,7 +42,7 @@ function previewSnippet(body: string): string {
       .map((l) => l.replace(/\t/g, '  ').trimEnd().slice(0, 40))
       .join('\n');
   }
-  const para = body
+  const para = text
     .split(/\n\s*\n/)[0]
     .replace(/[#*_`>]/g, '')
     .trim()

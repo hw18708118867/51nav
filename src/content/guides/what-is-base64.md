@@ -101,9 +101,10 @@ and only then Base64 the ciphertext if it needs to travel as text.
 
 A long run of letters, digits, `+`, `/`, and trailing `=` is a good tell. Strings that are exactly a
 multiple of four characters (ignoring whitespace) and use only the Base64 alphabet are almost
-certainly encoded data. Decoding it is the fastest way to confirm what it actually contains.
+certainly encoded data. Decoding it is the fastest way to confirm what it actually contains — a [Base64 Converter](https://toolhub.51nav.com/tools/base64-converter/) does it in the browser without any setup.
 
 ## Next steps
 
 - Put it into practice with [How to Encode Base64](/guides/how-to-encode-base64).
 - See how Base64 fits into tokens in [What Is a JWT?](/guides/what-is-jwt).
+- Encode or decode any string instantly with the [Base64 Converter](https://toolhub.51nav.com/tools/base64-converter/). There is also a [Base64 tool on DevTools](https://devtools.51nav.com/encode/base64/) and a [Base64 tool on Toolbox](https://toolbox.51nav.com/tools/encoding/base64/).

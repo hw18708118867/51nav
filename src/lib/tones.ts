@@ -18,9 +18,10 @@ export type Tone =
   | 'teal'
   | 'cyan'
   | 'sky'
+  | 'lime'
   | 'slate';
 
-export const toneIcon: Record<Tone, string> = {
+export const toneIcon: Record<string, string> = {
   blue: 'bg-blue-500/15 text-blue-400 ring-1 ring-blue-400/20',
   indigo: 'bg-indigo-500/15 text-indigo-400 ring-1 ring-indigo-400/20',
   violet: 'bg-violet-500/15 text-violet-400 ring-1 ring-violet-400/20',
@@ -37,10 +38,11 @@ export const toneIcon: Record<Tone, string> = {
   teal: 'bg-teal-500/15 text-teal-400 ring-1 ring-teal-400/20',
   cyan: 'bg-cyan-500/15 text-cyan-400 ring-1 ring-cyan-400/20',
   sky: 'bg-sky-500/15 text-sky-400 ring-1 ring-sky-400/20',
+  lime: 'bg-lime-500/15 text-lime-400 ring-1 ring-lime-400/20',
   slate: 'bg-slate-500/15 text-slate-300 ring-1 ring-slate-400/20',
 };
 
-export const toneSolid: Record<Tone, string> = {
+export const toneSolid: Record<string, string> = {
   blue: 'bg-blue-600 hover:bg-blue-500',
   indigo: 'bg-indigo-600 hover:bg-indigo-500',
   violet: 'bg-violet-600 hover:bg-violet-500',
@@ -57,5 +59,6 @@ export const toneSolid: Record<Tone, string> = {
   teal: 'bg-teal-600 hover:bg-teal-500',
   cyan: 'bg-cyan-600 hover:bg-cyan-500',
   sky: 'bg-sky-600 hover:bg-sky-500',
+  lime: 'bg-lime-600 hover:bg-lime-500',
   slate: 'bg-slate-600 hover:bg-slate-500',
 };

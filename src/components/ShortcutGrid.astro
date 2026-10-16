@@ -147,7 +147,7 @@ const initial = defaultShortcuts;
   import { faviconUrl } from '../lib/favicon';
 
   const KEY = '51nav:shortcuts';
-  const grid = document.querySelector('[data-sc-grid]');
+  const grid = document.querySelector<HTMLElement>('[data-sc-grid]');
   const isManage = grid?.dataset.manage === 'true';
   const form = document.querySelector('[data-sc-form]');
   const nameInput = document.querySelector('[data-sc-name]');

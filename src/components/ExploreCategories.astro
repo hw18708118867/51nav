@@ -73,7 +73,7 @@ const arrowColor: Record<string, string> = {
             class="group tile flex items-center gap-3 rounded-2xl p-4"
           >
             <span class={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${tile}`}>
-              <Icon name={c.icon} class="h-5 w-5 text-white" />
+              <Icon name={c.icon ?? 'globe'} class="h-5 w-5 text-white" />
             </span>
             <div class="min-w-0 flex-1">
               <h3 class="truncate font-semibold text-ink">{c.name}</h3>

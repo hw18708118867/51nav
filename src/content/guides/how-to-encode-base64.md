@@ -20,7 +20,7 @@ faq:
 
 You reach for Base64 when you have binary data that needs to live somewhere text-only: an image
 embedded in a data URL, credentials in an HTTP header, or a blob inside JSON. The goal is never to hide
-the data — it is to make it survive a text channel intact. Once you keep that in mind, the commands
+the data — it is to make it survive a text channel intact. For a quick conversion without writing code, a [Base64 Converter](https://toolhub.51nav.com/tools/base64-converter/) handles both directions in the browser. Once you keep that in mind, the commands
 below are straightforward.
 
 ## Encoding in the browser
@@ -115,3 +115,4 @@ plain Base64, a URL or token wants Base64URL.
 
 - Understand the basics in [What Is Base64?](/guides/what-is-base64).
 - See Base64 inside tokens in [What Is a JWT?](/guides/what-is-jwt).
+- Convert any text or file to and from Base64 with the [Base64 Converter](https://toolhub.51nav.com/tools/base64-converter/). There is also a [Base64 tool on DevTools](https://devtools.51nav.com/encode/base64/) and a [Base64 tool on Toolbox](https://toolbox.51nav.com/tools/encoding/base64/).

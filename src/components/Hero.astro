@@ -206,7 +206,7 @@ const siteIcon = icon('search');
   function applyEngine(id: string) {
     const e = engines.find((x) => x.id === id) ?? engines.find((x) => x.id === DEFAULT_ENGINE)!;
     if (!e) return;
-    if (engineIcon) engineIcon.innerHTML = icon(e.icon);
+    if (engineIcon) engineIcon.innerHTML = icon(e.icon) ?? '';
     if (engineName) engineName.textContent = e.name;
     (engineBtn as HTMLElement)?.setAttribute('data-engine', e.id);
   }
