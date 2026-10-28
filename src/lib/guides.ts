@@ -39,19 +39,19 @@ export function readingTime(body: string | undefined): number {
 // Keyed by the guide id (the markdown filename without extension) so the
 // association is explicit and content-driven rather than guessed from keywords.
 export const GUIDE_ICONS: Record<string, { icon: string; tone: Tone }> = {
-  'what-is-json': { icon: 'braces', tone: 'blue' },
-  'json-formatter-guide': { icon: 'braces', tone: 'blue' },
-  'what-is-jwt': { icon: 'shield', tone: 'rose' },
-  'how-to-decode-jwt': { icon: 'key-round', tone: 'rose' },
-  'what-is-base64': { icon: 'binary', tone: 'emerald' },
-  'how-to-encode-base64': { icon: 'binary', tone: 'emerald' },
-  'how-to-generate-a-strong-password': { icon: 'lock', tone: 'amber' },
-  'what-is-a-hash': { icon: 'hash', tone: 'orange' },
-  'what-is-a-qr-code': { icon: 'qr-code', tone: 'sky' },
-  'what-is-a-uuid': { icon: 'fingerprint', tone: 'cyan' },
-  'what-is-unix-timestamp': { icon: 'clock', tone: 'green' },
-  'what-is-url-encoding': { icon: 'link', tone: 'yellow' },
-  'what-is-utf8': { icon: 'languages', tone: 'slate' },
+  'json-unexpected-token': { icon: 'braces', tone: 'blue' },
+  'jwt-signature-verification-failed': { icon: 'shield', tone: 'rose' },
+  'sm4-vs-aes': { icon: 'lock', tone: 'purple' },
+  'bip39-derivation-path': { icon: 'bitcoin', tone: 'orange' },
+  'url-encode-space-plus': { icon: 'link', tone: 'yellow' },
+  'utf8-vs-gbk-mojibake': { icon: 'languages', tone: 'slate' },
+  'yaml-to-json-gotchas': { icon: 'braces', tone: 'teal' },
+  'bcrypt-vs-scrypt-vs-argon2': { icon: 'hash', tone: 'fuchsia' },
+  'base64-data-uri-image': { icon: 'image', tone: 'rose' },
+  'uuid-vs-ulid': { icon: 'fingerprint', tone: 'cyan' },
+  'unix-timestamp-10-vs-13': { icon: 'clock', tone: 'green' },
+  'x509-certificate-expired': { icon: 'file-text', tone: 'red' },
+  'qr-code-ecc-level': { icon: 'qr-code', tone: 'sky' },
 };
 
 // Gradient + snippet text colour for the homepage GuideGrid cards, keyed by tone
